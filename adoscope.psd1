@@ -13,7 +13,9 @@
     AliasesToExport      = @()
     PrivateData          = @{
         PSData = @{
-            Tags = @('AzureDevOps', 'Security', 'Audit', 'Governance', 'DevOps')
+            Tags       = @('AzureDevOps', 'Security', 'Audit', 'Governance', 'DevOps')
+            ProjectUri = 'https://github.com/cescomar/adoscope'
+            LicenseUri = 'https://github.com/cescomar/adoscope/blob/main/LICENSE'
         }
     }
 }

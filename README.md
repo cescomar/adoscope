@@ -1,5 +1,7 @@
 # adoscope
 
+[![ci](https://github.com/cescomar/adoscope/actions/workflows/ci.yml/badge.svg)](https://github.com/cescomar/adoscope/actions/workflows/ci.yml)
+
 Read-only security and governance audit for **Azure DevOps Services** organizations.
 
 adoscope reads the configuration of an organization through the REST API and reports
