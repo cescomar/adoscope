@@ -1,0 +1,13 @@
+[
+  "PIP001 production",
+  "PIP002 production",
+  "SEC001 lab-azurerm-secret",
+  "SEC001 lab-generic",
+  "SEC002 lab-azurerm-secret",
+  "SEC003 adoscope-lab",
+  "SEC007 lab-azurerm-certificate",
+  "SEC008 lab-vg-secrets",
+  "SEC009 lab-vg-plain",
+  "SEC010 lab-signing.pfx",
+  "SEC011 lab-yaml"
+]

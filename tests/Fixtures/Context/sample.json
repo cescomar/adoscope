@@ -1,0 +1,19 @@
+{
+  "Organization": "fabrikam-sample",
+  "CollectedAt": "2026-01-01T00:00:00Z",
+  "Collections": {
+    "Projects": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-000000000001", "name": "alpha", "visibility": "private" },
+        { "id": "00000000-0000-0000-0000-000000000002", "name": "beta", "visibility": "public" },
+        { "id": "00000000-0000-0000-0000-000000000003", "name": "gamma" }
+      ]
+    },
+    "Repositories": {
+      "Status": "Forbidden",
+      "Items": null,
+      "Error": "403 Forbidden"
+    }
+  }
+}

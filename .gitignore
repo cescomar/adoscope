@@ -1,0 +1,7 @@
+# Real organization data must never be committed.
+context*.json
+report*.json
+*.sarif
+*.html
+!tests/Fixtures/**
+testResults.xml

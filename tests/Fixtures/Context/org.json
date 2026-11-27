@@ -1,0 +1,282 @@
+{
+  "Organization": "contoso-sample",
+  "CollectedAt": "2026-06-01T00:00:00Z",
+  "Collections": {
+    "Projects": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web", "visibility": "private" },
+        { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api", "visibility": "private" },
+        { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data", "visibility": "public" }
+      ]
+    },
+    "BuildDefinitions": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 1, "name": "web-ci", "project": { "name": "web" }, "process": { "type": 2, "yamlFilename": "/azure-pipelines.yml" },
+          "createdDate": "2025-01-01T00:00:00Z", "latestBuild": { "queueTime": "2026-05-25T09:00:00Z", "finishTime": "2026-05-25T10:00:00Z" },
+          "triggers": [ { "triggerType": "pullRequest", "forks": { "enabled": true, "allowSecrets": true, "allowFullAccessToken": false } } ],
+          "variables": { "DeployToken": { "isSecret": false, "_valueLooksLikeCredential": false },
+                         "BuildConfig": { "isSecret": false, "_valueLooksLikeCredential": false },
+                         "NugetKey": { "isSecret": true, "_valueLooksLikeCredential": false } } },
+        { "id": 2, "name": "web-stale", "project": { "name": "web" }, "process": { "type": 2 },
+          "createdDate": "2025-01-01T00:00:00Z", "latestBuild": { "queueTime": "2026-01-01T09:00:00Z", "finishTime": "2026-01-01T10:00:00Z" },
+          "triggers": [ { "triggerType": "pullRequest", "forks": { "enabled": false, "allowSecrets": true } } ] },
+        { "id": 3, "name": "web-classic", "project": { "name": "web" }, "process": { "type": 1 },
+          "createdDate": "2025-01-01T00:00:00Z", "latestBuild": { "queueTime": "2026-05-30T09:00:00Z" } },
+        { "id": 4, "name": "api-never-old", "project": { "name": "api" }, "process": { "type": 2 }, "createdDate": "2025-12-01T00:00:00Z",
+          "triggers": [ { "triggerType": "continuousIntegration" },
+                        { "triggerType": "pullRequest", "forks": { "enabled": true, "allowSecrets": true, "allowFullAccessToken": true } } ] },
+        { "id": 5, "name": "api-never-new", "project": { "name": "api" }, "process": { "type": 2 }, "createdDate": "2026-05-20T00:00:00Z",
+          "variables": { "Endpoint": { "isSecret": false, "_valueLooksLikeCredential": true } } },
+        { "id": 6, "name": "api-minimal", "project": { "name": "api" } },
+        { "id": 7, "name": "data-pr", "project": { "name": "data" }, "process": { "type": 2 },
+          "createdDate": "2026-05-01T00:00:00Z", "latestBuild": { "finishTime": "2026-05-31T10:00:00Z" },
+          "triggers": [ { "triggerType": "pullRequest", "forks": { "enabled": true, "allowSecrets": true, "allowFullAccessToken": true } } ] }
+      ]
+    },
+    "Builds": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 101, "result": "failed", "finishTime": "2026-05-30T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 102, "result": "failed", "finishTime": "2026-05-29T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 103, "result": "canceled", "finishTime": "2026-05-28T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 104, "result": "succeeded", "finishTime": "2026-05-27T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 105, "result": "failed", "finishTime": "2026-05-26T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 106, "result": "partiallySucceeded", "finishTime": "2026-05-25T10:00:00Z", "definition": { "id": 1, "name": "web-ci" }, "project": { "name": "web" } },
+        { "id": 201, "result": "failed", "finishTime": "2026-01-05T10:00:00Z", "definition": { "id": 2, "name": "web-stale" }, "project": { "name": "web" } },
+        { "id": 202, "result": "succeeded", "finishTime": "2026-01-04T10:00:00Z", "definition": { "id": 2, "name": "web-stale" }, "project": { "name": "web" } },
+        { "id": 203, "result": "succeeded", "finishTime": "2026-01-03T10:00:00Z", "definition": { "id": 2, "name": "web-stale" }, "project": { "name": "web" } },
+        { "id": 204, "result": "succeeded", "finishTime": "2026-01-02T10:00:00Z", "definition": { "id": 2, "name": "web-stale" }, "project": { "name": "web" } },
+        { "id": 205, "result": "succeeded", "finishTime": "2026-01-01T10:00:00Z", "definition": { "id": 2, "name": "web-stale" }, "project": { "name": "web" } },
+        { "id": 301, "result": "failed", "finishTime": "2026-05-30T10:00:00Z", "definition": { "id": 3, "name": "web-classic" }, "project": { "name": "web" } },
+        { "id": 302, "result": "failed", "finishTime": "2026-05-29T10:00:00Z", "definition": { "id": 3, "name": "web-classic" }, "project": { "name": "web" } },
+        { "id": 303, "result": "failed", "finishTime": "2026-05-28T10:00:00Z", "definition": { "id": 3, "name": "web-classic" }, "project": { "name": "web" } },
+        { "id": 401 }
+      ]
+    },
+    "ServiceConnections": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000e1", "name": "web-azure-secret", "type": "azurerm",
+          "authorization": { "scheme": "ServicePrincipal", "parameters": { "authenticationType": "spnKey", "tenantid": "00000000-0000-0000-0000-000000000001" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" },
+          "_pipelinePermissions": { "allPipelines": { "authorized": true }, "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e1", "name": "web-azure-secret", "type": "azurerm",
+          "authorization": { "scheme": "ServicePrincipal", "parameters": { "authenticationType": "spnKey" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" },
+          "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e2", "name": "web-azure-legacy", "type": "azurerm",
+          "authorization": { "scheme": "ServicePrincipal", "parameters": { "tenantid": "00000000-0000-0000-0000-000000000001" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e3", "name": "web-azure-cert", "type": "azurerm",
+          "authorization": { "scheme": "ServicePrincipal", "parameters": { "authenticationType": "spnCertificate" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e4", "name": "web-azure-wif", "type": "azurerm",
+          "authorization": { "scheme": "WorkloadIdentityFederation", "parameters": { "workloadIdentityFederationIssuerType": "EntraID" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e5", "name": "web-azure-mi", "type": "azurerm",
+          "authorization": { "scheme": "ManagedServiceIdentity", "parameters": {} },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e6", "name": "api-generic", "type": "generic",
+          "authorization": { "scheme": "UsernamePassword", "parameters": { "username": "svc" } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" },
+          "_pipelinePermissions": { "allPipelines": { "authorized": true }, "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000e7", "name": "api-allpipelines-false", "type": "generic",
+          "authorization": { "scheme": "UsernamePassword" },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" },
+          "_pipelinePermissions": { "allPipelines": { "authorized": false } } },
+        { "id": "00000000-0000-0000-0000-0000000000e8", "name": "api-minimal" }
+      ]
+    },
+    "VariableGroups": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 11, "name": "web-secrets", "type": "Vsts", "variables": { "DbPassword": { "isSecret": true, "_valueLooksLikeCredential": false } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "allPipelines": { "authorized": true } } },
+        { "id": 12, "name": "web-settings", "type": "Vsts", "variables": { "Region": { "isSecret": false, "_valueLooksLikeCredential": false } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "allPipelines": { "authorized": true } } },
+        { "id": 13, "name": "api-config", "type": "Vsts",
+          "variables": { "ApiToken": { "isSecret": false, "_valueLooksLikeCredential": false },
+                         "Endpoint": { "isSecret": false, "_valueLooksLikeCredential": true },
+                         "Timeout": { "isSecret": false, "_valueLooksLikeCredential": false } },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": 14, "name": "api-kv", "type": "AzureKeyVault", "variables": {},
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" }, "_pipelinePermissions": { "allPipelines": { "authorized": true } } },
+        { "id": 15, "name": "api-minimal" }
+      ]
+    },
+    "SecureFiles": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000f1", "name": "signing.pfx",
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_pipelinePermissions": { "allPipelines": { "authorized": true } } },
+        { "id": "00000000-0000-0000-0000-0000000000f2", "name": "ios.mobileprovision",
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" }, "_pipelinePermissions": { "pipelines": [] } },
+        { "id": "00000000-0000-0000-0000-0000000000f3", "name": "minimal.key" }
+      ]
+    },
+    "Environments": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 21, "name": "production", "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_checks": [] },
+        { "id": 22, "name": "prod-eu", "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" },
+          "_checks": [ { "id": 1, "type": { "id": "8c6f20a7-a545-4486-9777-f762fafe0d4d", "name": "Approval" }, "isDisabled": false } ] },
+        { "id": 23, "name": "Produzione", "_project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" },
+          "_checks": [ { "id": 2, "type": { "id": "8c6f20a7-a545-4486-9777-f762fafe0d4d", "name": "Approval" }, "isDisabled": false },
+                       { "id": 3, "type": { "id": "4020e66e-b0f3-47e1-bc88-48f3cc59b5f3", "name": "ExtendsCheck" }, "isDisabled": false } ] },
+        { "id": 24, "name": "staging", "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" }, "_checks": [] },
+        { "id": 25, "name": "product-catalog", "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" }, "_checks": [] },
+        { "id": 26, "name": "live", "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" },
+          "_checks": [ { "id": 4, "type": { "name": "Approval" }, "isDisabled": true } ] },
+        { "id": 27 },
+        { "id": 28, "name": "prod-unreadable", "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" },
+          "_checks": null, "_error": "approvals and checks of 'prod-unreadable': HTTP 403" }
+      ]
+    },
+    "Repositories": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000r1", "name": "web-app", "defaultBranch": "refs/heads/main", "project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": "00000000-0000-0000-0000-0000000000r2", "name": "web-lib", "defaultBranch": "refs/heads/main", "project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": "00000000-0000-0000-0000-0000000000r3", "name": "api-svc", "defaultBranch": "refs/heads/main", "project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": "00000000-0000-0000-0000-0000000000r4", "name": "api-gw", "defaultBranch": "refs/heads/main", "project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": "00000000-0000-0000-0000-0000000000r5", "name": "api-empty", "project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": "00000000-0000-0000-0000-0000000000r6", "name": "api-archived", "defaultBranch": "refs/heads/main", "isDisabled": true, "project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": "00000000-0000-0000-0000-0000000000r7", "name": "web-release", "defaultBranch": "refs/heads/release/2026", "project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": "00000000-0000-0000-0000-0000000000r8", "name": "data-etl", "defaultBranch": "refs/heads/main", "project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" } }
+      ]
+    },
+    "Policies": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 1, "isEnabled": true, "isBlocking": true, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" },
+          "settings": { "minimumApproverCount": 2, "creatorVoteCounts": false,
+                        "scope": [ { "repositoryId": "00000000-0000-0000-0000-0000000000r1", "refName": "refs/heads/main", "matchKind": "Exact" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 2, "isEnabled": true, "isBlocking": true, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" },
+          "settings": { "minimumApproverCount": 1, "creatorVoteCounts": false,
+                        "scope": [ { "repositoryId": null, "refName": "refs/heads/release/", "matchKind": "Prefix" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 3, "isEnabled": true, "isBlocking": true, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" },
+          "settings": { "minimumApproverCount": 1, "creatorVoteCounts": true,
+                        "scope": [ { "repositoryId": "00000000-0000-0000-0000-0000000000r3", "refName": "refs/heads/main", "matchKind": "Exact" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": 4, "isEnabled": true, "isBlocking": false, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" },
+          "settings": { "minimumApproverCount": 2, "scope": [ { "repositoryId": "00000000-0000-0000-0000-0000000000r4", "refName": "refs/heads/main", "matchKind": "Exact" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": 5, "isEnabled": true, "isBlocking": true, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" },
+          "settings": { "minimumApproverCount": 1, "creatorVoteCounts": false,
+                        "scope": [ { "repositoryId": null, "refName": "refs/heads/main", "matchKind": "Exact" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" } },
+        { "id": 6, "isEnabled": true, "isBlocking": true, "type": { "id": "0609b952-1397-4640-95ec-e00a01b2c241" },
+          "settings": { "scope": [ { "repositoryId": "00000000-0000-0000-0000-0000000000r2", "refName": "refs/heads/main", "matchKind": "Exact" } ] },
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 7, "isEnabled": true, "isBlocking": true, "type": { "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd" } }
+      ]
+    },
+    "RepositoryActivity": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000r1", "name": "web-app", "defaultBranch": "refs/heads/main", "lastCommitDate": "2026-05-01T00:00:00Z",
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": "00000000-0000-0000-0000-0000000000r2", "name": "web-lib", "defaultBranch": "refs/heads/main", "lastCommitDate": "2025-10-01T00:00:00Z",
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": "00000000-0000-0000-0000-0000000000r3", "name": "api-svc", "defaultBranch": "refs/heads/main",
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } }
+      ]
+    },
+    "AgentQueues": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 31, "name": "shared-linux", "pool": { "id": 20, "name": "shared-linux", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 32, "name": "Azure Pipelines", "pool": { "id": 9, "name": "Azure Pipelines", "isHosted": true }, "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 33, "name": "shared-linux", "pool": { "id": 20, "name": "shared-linux", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": 34, "name": "Azure Pipelines", "pool": { "id": 9, "name": "Azure Pipelines", "isHosted": true }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": 35, "name": "api-only", "pool": { "id": 21, "name": "api-only", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "id": 36, "name": "shared-linux", "pool": { "id": 20, "name": "shared-linux", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" } },
+        { "id": 37, "name": "orphan" }
+      ]
+    },
+    "AgentPools": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 9, "name": "Azure Pipelines", "isHosted": true, "options": "none",
+          "_agents": [ { "id": 1, "name": "Hosted Agent", "version": "2.0.0", "status": "offline", "statusChangedOn": "2025-01-01T00:00:00Z" } ] },
+        { "id": 20, "name": "shared-linux", "isHosted": false, "options": "none",
+          "_agents": [
+            { "id": 1, "name": "linux-01", "version": "3.238.0", "status": "online", "statusChangedOn": "2026-05-31T00:00:00Z" },
+            { "id": 2, "name": "linux-02", "version": "4.250.0", "status": "offline", "statusChangedOn": "2026-03-01T00:00:00Z" },
+            { "id": 3, "name": "linux-03", "version": "4.250.0", "status": "offline", "statusChangedOn": "2026-05-25T00:00:00Z" },
+            { "id": 4, "name": "linux-04" }
+          ] },
+        { "id": 22, "name": "vmss", "isHosted": false, "options": "elasticPool, singleUseAgents",
+          "_agents": [ { "id": 1, "name": "vmss-0", "version": "2.0.0", "status": "offline", "statusChangedOn": "2025-01-01T00:00:00Z" } ] },
+        { "id": 23, "name": "minimal-pool" }
+      ]
+    },
+    "UserEntitlements": {
+      "Status": "Ok",
+      "Items": [
+        { "id": "00000000-0000-0000-0000-0000000000u1", "user": { "principalName": "alice@contoso.example", "descriptor": "aad.alice" },
+          "accessLevel": { "accountLicenseType": "express", "licensingSource": "account", "licenseDisplayName": "Basic" },
+          "lastAccessedDate": "2026-05-20T00:00:00Z", "dateCreated": "2025-01-01T00:00:00Z" },
+        { "id": "00000000-0000-0000-0000-0000000000u2", "user": { "principalName": "bob@contoso.example", "descriptor": "aad.bob" },
+          "accessLevel": { "accountLicenseType": "express", "licensingSource": "account", "licenseDisplayName": "Basic" },
+          "lastAccessedDate": "2026-01-01T00:00:00Z", "dateCreated": "2025-01-01T00:00:00Z" },
+        { "id": "00000000-0000-0000-0000-0000000000u3", "user": { "principalName": "carol@contoso.example", "descriptor": "aad.carol" },
+          "accessLevel": { "accountLicenseType": "advanced", "licensingSource": "account", "licenseDisplayName": "Basic + Test Plans" },
+          "lastAccessedDate": "0001-01-01T00:00:00Z", "dateCreated": "2026-01-15T00:00:00Z" },
+        { "id": "00000000-0000-0000-0000-0000000000u4", "user": { "principalName": "dave@contoso.example" },
+          "accessLevel": { "accountLicenseType": "express", "licensingSource": "msdn" },
+          "lastAccessedDate": "2025-01-01T00:00:00Z" },
+        { "id": "00000000-0000-0000-0000-0000000000u5", "user": { "principalName": "erin@contoso.example" },
+          "accessLevel": { "accountLicenseType": "stakeholder", "licensingSource": "account" },
+          "lastAccessedDate": "2025-01-01T00:00:00Z" },
+        { "id": "00000000-0000-0000-0000-0000000000u6" }
+      ]
+    },
+    "AdminGroups": {
+      "Status": "Ok",
+      "Items": [
+        { "descriptor": "vssgp.pca", "principalName": "[contoso-sample]\\Project Collection Administrators", "scope": "organization", "project": null,
+          "members": [
+            { "descriptor": "aad.alice", "principalName": "alice@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.bob", "principalName": "bob@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "[contoso-sample]\\Org Admins" },
+            { "descriptor": "aad.carol", "principalName": "carol@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.dan", "principalName": "dan@partner.example", "origin": "aad", "subjectKind": "user", "metaType": "guest", "via": "direct" },
+            { "descriptor": "aad.erin", "principalName": "erin@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aadsp.deploy", "origin": "aad", "subjectKind": "servicePrincipal", "via": "direct" }
+          ] },
+        { "descriptor": "vssgp.web-admins", "principalName": "[web]\\Project Administrators", "scope": "project", "project": "web",
+          "members": [
+            { "descriptor": "aad.alice", "principalName": "alice@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.dan", "principalName": "dan@partner.example", "origin": "aad", "subjectKind": "user", "metaType": "guest", "via": "direct" }
+          ] },
+        { "descriptor": "vssgp.api-admins", "principalName": "[api]\\Project Administrators", "scope": "project", "project": "api",
+          "members": [
+            { "descriptor": "aad.alice", "principalName": "alice@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.erin", "principalName": "erin@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "msa.frank", "principalName": "frank@outlook.example", "origin": "msa", "subjectKind": "user", "via": "direct" },
+            { "descriptor": "aad.gina", "principalName": "gina@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.hank", "principalName": "hank@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" },
+            { "descriptor": "aad.ivan", "principalName": "ivan@contoso.example", "origin": "aad", "subjectKind": "user", "metaType": "member", "via": "direct" }
+          ] },
+        { "descriptor": "vssgp.data-admins", "principalName": "[data]\\Project Administrators", "scope": "project", "project": "data", "members": [] },
+        { "scope": "project" }
+      ]
+    },
+    "BuildGeneralSettings": {
+      "Status": "Ok",
+      "Items": [
+        { "enforceJobAuthScope": true, "enforceReferencedRepoScopedToken": true, "enforceSettableVar": true, "enableShellTasksArgsSanitizing": true,
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "enforceJobAuthScope": false, "enforceReferencedRepoScopedToken": true, "enforceSettableVar": false, "enableShellTasksArgsSanitizing": true,
+          "forkProtectionEnabled": true, "buildsEnabledForForks": true, "enforceNoAccessToSecretsFromForks": true, "enforceJobAuthScopeForForks": false,
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
+        { "forkProtectionEnabled": true, "buildsEnabledForForks": false,
+          "_project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" } }
+      ]
+    }
+  }
+}

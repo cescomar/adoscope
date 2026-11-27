@@ -1,0 +1,29 @@
+name: lab
+
+# Nightly check against the live lab: detects Azure DevOps API changes that would make a
+# check stop working. Setup (once): run lab/Initialize-AdoScopeLab.ps1 with a write PAT,
+# then add repository variable ADO_LAB_ORGANIZATION and secret ADO_LAB_READ_PAT (read-only).
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lab:
+    # Skipped where the lab is not configured (forks, new clones).
+    if: ${{ vars.ADO_LAB_ORGANIZATION != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      # No report artifact on purpose: it would expose organization-wide data on a public repository.
+      - name: Verify lab findings
+        shell: pwsh
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_LAB_READ_PAT }}
+          ADO_LAB_ORGANIZATION: ${{ vars.ADO_LAB_ORGANIZATION }}
+        run: ./lab/Test-AdoScopeLab.ps1 -Organization $env:ADO_LAB_ORGANIZATION
