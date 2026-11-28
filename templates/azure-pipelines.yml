@@ -33,7 +33,10 @@ parameters:
 variables:
   serviceConnection: adoscope-reader        # name of the workload identity federation connection
   organization: fabrikam                    # your organization (or set Organization in the config)
-  adoscopeVersion: v0.2.0                   # pinned release tag of adoscope
+  # Pinned to the reviewed commit of release v0.3.0: a tag can be moved, a commit SHA cannot.
+  # To upgrade, replace both values in a reviewed pull request.
+  adoscopeVersion: v0.3.0
+  adoscopeCommit: 828607f264db9d6a86fcde1fcad82b16b9c1412e
 
 pool:
   vmImage: ubuntu-latest
@@ -41,8 +44,14 @@ pool:
 steps:
   - checkout: self
 
-  - script: git clone --quiet --depth 1 --branch $(adoscopeVersion) https://github.com/cescomar/adoscope.git $(Agent.TempDirectory)/adoscope
-    displayName: Get adoscope $(adoscopeVersion)
+  - script: |
+      set -eu
+      git init --quiet $(Agent.TempDirectory)/adoscope
+      cd $(Agent.TempDirectory)/adoscope
+      git fetch --quiet --depth 1 https://github.com/cescomar/adoscope.git $(adoscopeCommit)
+      git checkout --quiet FETCH_HEAD
+      test "$(git rev-parse HEAD)" = "$(adoscopeCommit)"
+    displayName: Get adoscope $(adoscopeVersion) ($(adoscopeCommit))
 
   - task: AzureCLI@2
     displayName: Audit $(organization)

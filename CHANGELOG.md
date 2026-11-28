@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- `templates/azure-pipelines.yml` fetches adoscope by the commit SHA of release v0.3.0
+  (verified after checkout) instead of by tag, which can be moved.
+- README reorganized: install from a release tag, how it works, output formats,
+  permissions, corrected live-verification count (28 of 33 checks).
+
 ## [0.3.0] - 2026-11-28
 
 ### Changed
