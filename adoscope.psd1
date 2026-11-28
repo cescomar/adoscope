@@ -1,6 +1,6 @@
 @{
     RootModule           = 'adoscope.psm1'
-    ModuleVersion        = '0.2.0'
+    ModuleVersion        = '0.3.0'
     GUID                 = '24e33732-1908-4d09-b414-f3911ca22fab'
     Author               = 'Francesco Marotta'
     Copyright            = '(c) 2026 Francesco Marotta. MIT License.'

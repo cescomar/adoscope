@@ -21,6 +21,28 @@ $script:OrganizationCollectors = [ordered]@{
     Extensions       = 'Get-AdoInstalledExtension'
     PersonalAccessTokens = 'Get-AdoPersonalAccessToken'
 }
+# Collection -> REST endpoint read by its collector (GET only), in Markdown. Used by reports
+# (what could not be read) and by tools/Update-CheckDoc.ps1 (docs/checks.md).
+$script:CollectionSource = [ordered]@{
+    Projects             = '`_apis/projects`'
+    BuildDefinitions     = '`{project}/_apis/build/definitions?includeLatestBuilds&includeAllProperties`'
+    Builds               = '`{project}/_apis/build/builds?maxBuildsPerDefinition=50`'
+    BuildGeneralSettings = '`{project}/_apis/build/generalsettings`'
+    ServiceConnections   = '`{project}/_apis/serviceendpoint/endpoints` + pipeline permissions'
+    VariableGroups       = '`{project}/_apis/distributedtask/variablegroups` + pipeline permissions (values discarded)'
+    SecureFiles          = '`{project}/_apis/distributedtask/securefiles` + pipeline permissions'
+    Environments         = '`{project}/_apis/distributedtask/environments` + check configurations'
+    Repositories         = '`{project}/_apis/git/repositories`'
+    RepositoryActivity   = '`{project}/_apis/git/repositories/{id}/commits` (latest commit)'
+    Policies             = '`{project}/_apis/policy/configurations`'
+    AgentQueues          = '`{project}/_apis/distributedtask/queues`'
+    AgentPools           = '`_apis/distributedtask/pools` + agents of self-hosted pools'
+    UserEntitlements     = '`vsaex: _apis/userentitlements`'
+    AdminGroups          = '`vssps: _apis/graph/groups`, `graph/users`, `graph/Memberships` (admin groups, nested groups expanded)'
+    ReleaseDefinitions   = '`vsrm: {project}/_apis/release/definitions` + each definition (variable values discarded)'
+    Extensions           = '`extmgmt: _apis/extensionmanagement/installedextensions`'
+    PersonalAccessTokens = '`vssps: _apis/tokenadmin/personalaccesstokens/{user}` for each licensed user (metadata only, never token values)'
+}
 
 function Get-AdoScopeContext {
     <#

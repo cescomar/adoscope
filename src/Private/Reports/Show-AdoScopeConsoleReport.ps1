@@ -27,6 +27,18 @@ function Show-AdoScopeConsoleReport {
         }
     }
 
+    # Per collection: what the identity could not read and which checks lose coverage.
+    $unreadable = @($Report.Collections | Where-Object Status -ne 'Ok')
+    if ($unreadable) {
+        Write-Host ''
+        Write-Host "Data not fully read ($($unreadable.Count))" -ForegroundColor Yellow
+        foreach ($c in $unreadable) {
+            $hint = if ($c.Status -eq 'Forbidden') { 'Access denied: grant the audit identity read access to it.' } else { $c.Error }
+            Write-Host "  $($c.Name) $($c.Status) - $($c.Source)"
+            Write-Host "      $hint$(if ($c.AffectedChecks) { " Affects: $($c.AffectedChecks -join ', ')." })"
+        }
+    }
+
     $incomplete = @($Report.Checks | Where-Object Status -notin 'Evaluated', 'Disabled')
     if ($incomplete) {
         Write-Host ''

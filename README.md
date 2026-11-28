@@ -137,6 +137,22 @@ GitHub Actions, with a PAT stored as a secret:
 The SARIF file validates against the official SARIF 2.1.0 schema; findings carry
 stable fingerprints so results do not duplicate across runs.
 
+**Operating it safely.**
+
+- *Pin what runs.* Use a released version, not `main`; the template pins one. Change the
+  pin through a reviewed pull request.
+- *Review what changes the gate.* `adoscope.config.psd1`, the baseline and suppressions
+  decide what fails the build: keep them in the repository, change them only through
+  reviewed pull requests (for example with a CODEOWNERS entry), and never regenerate the
+  baseline automatically, or new findings get accepted silently.
+- *Treat outputs as confidential.* Reports, saved contexts and logs contain user names
+  and emails, resource names and configuration details (never secret values). Keep them
+  in private repositories or artifacts with restricted access and a retention limit
+  (Azure Pipelines artifact retention, GitHub Actions `retention-days`).
+- *Use a dedicated audit identity*, preferably workload identity federation, rather than a
+  person's account. When it cannot read something, the report lists the collection, the
+  API it called and the checks affected, instead of reporting them clean.
+
 ## Configuration
 
 Optional `adoscope.config.psd1` (PowerShell data file: comments allowed, never executed):

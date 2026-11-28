@@ -5,6 +5,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-28
+
 ### Changed
 
 - **Baseline: "Resolved" now needs proof.** A baseline finding that is gone counts as
@@ -22,6 +24,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   projects) and `SchemaVersion`; console and HTML show the collection date. Offline
   contexts older than 7 days print a warning. Saved contexts carry `SchemaVersion`; a
   context from a newer adoscope is rejected.
+- Unreadable data is explained: each report collection has `Source` (the API called) and
+  `AffectedChecks`; the console lists them under "Data not fully read", the HTML in the
+  Collections table. README: how to operate the gate safely (pinning, review of config,
+  baseline and suppressions, confidentiality and retention of reports).
 
 ### Added
 
@@ -80,5 +86,7 @@ coverage (NotEvaluated / Partial), console, JSON, SARIF 2.1.0 and HTML reports, 
 with exit codes, configuration with expiring suppressions, baseline gate, parallel
 collection, nightly lab verification.
 
+[Unreleased]: https://github.com/cescomar/adoscope/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/cescomar/adoscope/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/cescomar/adoscope/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cescomar/adoscope/releases/tag/v0.1.0

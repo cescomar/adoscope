@@ -15,31 +15,11 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot '../adoscope.psd1') -Force
 $checks = & (Get-Module adoscope) { Import-AdoScopeCheck -Path $script:CheckRoot } | Sort-Object Id
+$endpoints = & (Get-Module adoscope) { $script:CollectionSource }
 $severityRank = @{ Critical = 0; High = 1; Medium = 2; Low = 3; Info = 4 }
 
-# Collection -> REST endpoint read by its collector (GET only).
-$endpoints = [ordered]@{
-    Projects             = '`_apis/projects`'
-    BuildDefinitions     = '`{project}/_apis/build/definitions?includeLatestBuilds&includeAllProperties`'
-    Builds               = '`{project}/_apis/build/builds?maxBuildsPerDefinition=50`'
-    BuildGeneralSettings = '`{project}/_apis/build/generalsettings`'
-    ServiceConnections   = '`{project}/_apis/serviceendpoint/endpoints` + pipeline permissions'
-    VariableGroups       = '`{project}/_apis/distributedtask/variablegroups` + pipeline permissions (values discarded)'
-    SecureFiles          = '`{project}/_apis/distributedtask/securefiles` + pipeline permissions'
-    Environments         = '`{project}/_apis/distributedtask/environments` + check configurations'
-    Repositories         = '`{project}/_apis/git/repositories`'
-    RepositoryActivity   = '`{project}/_apis/git/repositories/{id}/commits` (latest commit)'
-    Policies             = '`{project}/_apis/policy/configurations`'
-    AgentQueues          = '`{project}/_apis/distributedtask/queues`'
-    AgentPools           = '`_apis/distributedtask/pools` + agents of self-hosted pools'
-    UserEntitlements     = '`vsaex: _apis/userentitlements`'
-    AdminGroups          = '`vssps: _apis/graph/groups`, `graph/users`, `graph/Memberships` (admin groups, nested groups expanded)'
-    ReleaseDefinitions   = '`vsrm: {project}/_apis/release/definitions` + each definition (variable values discarded)'
-    Extensions           = '`extmgmt: _apis/extensionmanagement/installedextensions`'
-    PersonalAccessTokens = '`vssps: _apis/tokenadmin/personalaccesstokens/{user}` for each licensed user (metadata only, never token values)'
-}
 $unmapped = @($checks.Requires | Sort-Object -Unique | Where-Object { -not $endpoints.Contains($_) })
-if ($unmapped) { throw "Add the endpoint of collection(s) $($unmapped -join ', ') to tools/Update-CheckDoc.ps1." }
+if ($unmapped) { throw "Add the endpoint of collection(s) $($unmapped -join ', ') to `$script:CollectionSource in src/Private/Core/Get-AdoScopeContext.ps1." }
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('# adoscope checks')

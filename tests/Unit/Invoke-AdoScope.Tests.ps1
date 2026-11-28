@@ -33,6 +33,18 @@ Describe 'Invoke-AdoScope' {
         $text | Should -Match 'High: 1'
         $text | Should -Match 'checks: 1/2 fully evaluated'
     }
+
+    It 'names the source and the affected checks of a collection that could not be read' {
+        $context = Get-Content (Join-Path $fixtures 'Context/org.json') -Raw | ConvertFrom-Json -AsHashtable
+        $context.Collections.ServiceConnections = @{ Status = 'Forbidden'; Items = @(); Error = 'web: HTTP 403' }
+        $path = Join-Path $TestDrive 'forbidden.json'
+        $context | ConvertTo-Json -Depth 50 | Set-Content $path
+        $report = Invoke-AdoScope -ContextPath $path -Quiet -PassThru -WarningAction SilentlyContinue
+        $collection = $report.Collections | Where-Object Name -eq 'ServiceConnections'
+        $collection.AffectedChecks | Should -Be 'SEC001', 'SEC002', 'SEC007'
+        $collection.Source | Should -BeLike '{project}/_apis/serviceendpoint/endpoints*'
+        ($report.Collections | Where-Object Status -eq 'Ok').AffectedChecks | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'adoscope.ps1 (CI wrapper)' {

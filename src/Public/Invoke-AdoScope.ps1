@@ -157,7 +157,12 @@ function New-AdoScopeReport {
         Organization = $Context.Organization; GeneratedAt = [datetime]::UtcNow.ToString('o')
         # Provenance: when the data was read, how, and which projects it covers.
         Scope        = [pscustomobject]@{ CollectedAt = $collectedAt.ToString('o'); Mode = $Mode; Projects = @($Context.Collections['Projects']?['Items'] | ForEach-Object { [string]$_['name'] } | Sort-Object) }
-        Collections  = @($Context.Collections.Keys | Sort-Object | ForEach-Object { $collection = $Context.Collections[$_]; [pscustomobject]@{ Name = $_; Status = $collection.Status; Count = @($collection.Items).Count; Error = $collection.Error } })
+        # What could not be read, from where, and which enabled checks it weakens.
+        Collections  = @($Context.Collections.Keys | Sort-Object | ForEach-Object {
+                $name = $_; $collection = $Context.Collections[$name]
+                $affected = if ($collection.Status -ne 'Ok') { @($Check | Where-Object { $name -in $_.Requires } | ForEach-Object Id | Sort-Object) } else { @() }
+                [pscustomobject]@{ Name = $name; Status = $collection.Status; Count = @($collection.Items).Count; Error = $collection.Error; Source = ($script:CollectionSource[$name] -replace '`'); AffectedChecks = $affected }
+            })
         Rules        = @($Check | ForEach-Object { New-AdoScopeReportRule -Check $_ -Override $Config.Parameters[$_.Id] })
         Checks       = @($Result.Checks) + $disabled; Findings = $Result.Findings
         Suppressions = @(Resolve-AdoScopeSuppression -Finding $Result.Findings -Suppression $Config.Suppressions)
