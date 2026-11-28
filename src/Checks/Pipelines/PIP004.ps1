@@ -2,6 +2,7 @@
     Id          = 'PIP004'
     Title       = 'Production stage of a classic release without approval'
     Category    = 'Pipelines'
+    Standards   = @('CICD-SEC-1')
     Severity    = 'High'
     Rationale   = 'A classic release stage with only automatic approval and no gates deploys to production as soon as a release is created or the previous stage succeeds. A mistaken or malicious build reaches users without anyone reviewing it.'
     Remediation = 'In the release pipeline, open the pre-deployment conditions of the stage and add at least one manual approver (a group, not one person), and consider gates such as Azure Monitor alerts. Better: move the release to a YAML pipeline that deploys to an environment with approvals and checks.'

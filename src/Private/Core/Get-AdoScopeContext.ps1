@@ -18,6 +18,8 @@ $script:OrganizationCollectors = [ordered]@{
     AgentPools       = 'Get-AdoAgentPool'
     UserEntitlements = 'Get-AdoUserEntitlement'
     AdminGroups      = 'Get-AdoAdminGroup'
+    Extensions       = 'Get-AdoInstalledExtension'
+    PersonalAccessTokens = 'Get-AdoPersonalAccessToken'
 }
 
 function Get-AdoScopeContext {
@@ -69,7 +71,11 @@ function Get-AdoScopeContext {
         Write-Progress -Activity 'adoscope: collecting' -Status "organization: $name"
         try {
             $items = @(& $script:OrganizationCollectors[$name] -Organization $Organization -Auth $Auth)
-            $context.Collections[$name] = ConvertTo-AdoScopeCollection -Name $name -Item $items -Failure @()
+            # A failed secondary call marks only its item (Add-AdoScopeEnrichment): collection becomes Partial.
+            $failures = @($items | Where-Object { $_ -is [hashtable] -and $_['_error'] } | ForEach-Object {
+                    [pscustomobject]@{ Project = '(organization)'; Exception = [System.Exception]::new($_._error) }
+                })
+            $context.Collections[$name] = ConvertTo-AdoScopeCollection -Name $name -Item $items -Failure $failures
         }
         catch {
             $failure = [pscustomobject]@{ Project = '(organization)'; Exception = $_.Exception }

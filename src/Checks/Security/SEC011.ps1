@@ -2,6 +2,7 @@
     Id          = 'SEC011'
     Title       = 'Credential stored as a plain-text variable in a pipeline definition'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-6')
     Severity    = 'Critical'
     Rationale   = 'A pipeline variable not marked as secret is visible in the pipeline editor, returned by the REST API to anyone who can read the pipeline, and printed unmasked in logs. A credential stored this way must be considered leaked.'
     Remediation = 'Revoke and rotate the credential now. Store the new one as a secret pipeline variable (lock icon), in a variable group linked to Azure Key Vault, or replace it with a service connection using workload identity federation.'

@@ -2,6 +2,7 @@
     Id          = 'SEC002'
     Title       = 'Azure service connection uses a client secret'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-6')
     Severity    = 'High'
     Rationale   = 'A client secret is a long-lived credential: it expires and breaks deployments, and if leaked it works from anywhere until revoked. Workload identity federation issues short-lived tokens and stores no secret.'
     Remediation = 'Convert the service connection to workload identity federation (Edit > Convert in the service connection page), or recreate it with that scheme, then delete the old client secret in Entra ID.'

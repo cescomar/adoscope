@@ -29,7 +29,8 @@ function ConvertTo-AdoScopeSarifRule {
         fullDescription      = @{ text = $Rule.Rationale }
         help                 = @{ text = $Rule.Remediation }
         defaultConfiguration = @{ level = ConvertTo-AdoScopeSarifLevel -Severity $Rule.Severity }
-        properties           = @{ category = $Rule.Category; tags = @($Rule.Category, 'azure-devops'); 'security-severity' = ConvertTo-AdoScopeSarifScore -Severity $Rule.Severity }
+        # Standards as tags: code scanning UIs can filter results by OWASP CI/CD risk.
+        properties           = @{ category = $Rule.Category; tags = @(@($Rule.Category, 'azure-devops') + @($Rule.Standards | Where-Object { $_ })); 'security-severity' = ConvertTo-AdoScopeSarifScore -Severity $Rule.Severity }
     }
 }
 

@@ -24,6 +24,7 @@ function Import-AdoScopeCheck {
         }
         $seen[$check.Id] = $file.FullName
         if (-not $check.ContainsKey('Parameters')) { $check.Parameters = @{} }
+        $check.Standards = @($check['Standards'])
         $check
     }
 }
@@ -53,4 +54,7 @@ function Assert-AdoScopeCheck {
     if ($Check.ContainsKey('Parameters') -and $Check.Parameters -isnot [hashtable]) {
         throw "$where has 'Parameters' that is not a hashtable."
     }
+    # OWASP Top 10 CI/CD Security Risks ids only (https://owasp.org/www-project-top-10-ci-cd-security-risks/).
+    $badStandard = @($Check['Standards'] | Where-Object { $_ -isnot [string] -or $_ -cnotmatch '^CICD-SEC-(10|[1-9])$' })
+    if ($badStandard) { throw "$where has invalid Standards '$($badStandard -join ', ')' (expected CICD-SEC-1 .. CICD-SEC-10)." }
 }

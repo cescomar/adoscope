@@ -35,8 +35,10 @@ Summary - Critical: 1, High: 2, Medium: 0, Low: 0, Info: 0 | suppressed: 0 | che
 
 ## What it checks
 
-29 checks across security, identity, pipelines, agents, hygiene, cost and reliability. Full
-list with rationale, remediation and parameters: **[docs/checks.md](docs/checks.md)**.
+33 checks across security, identity, pipelines, agents, hygiene, cost and reliability, each
+security check mapped to the [OWASP Top 10 CI/CD Security Risks](https://owasp.org/www-project-top-10-ci-cd-security-risks/)
+(shown in HTML, SARIF tags and the docs). Full list with rationale, remediation and
+parameters: **[docs/checks.md](docs/checks.md)**.
 
 | Area | Examples |
 |---|---|
@@ -45,7 +47,7 @@ list with rationale, remediation and parameters: **[docs/checks.md](docs/checks.
 | Code | default branches without required reviewers; public projects |
 | Agents | self-hosted pools shared across trust groups; outdated or long-offline agents |
 | Hygiene and cost | pipelines and repositories unused for months; paid licenses of inactive users; pipelines that fail too often |
-| Identity | too many collection or project administrators; inactive administrators; guest accounts with admin rights; organization not connected to Microsoft Entra ID |
+| Identity | too many collection or project administrators; inactive administrators; guest accounts with admin rights; organization not connected to Microsoft Entra ID; personal access tokens with full access, long lifetimes or valid in all organizations (metadata only, never token values) |
 
 ## Quick start
 
@@ -183,8 +185,8 @@ Install-Module PSScriptAnalyzer -Scope CurrentUser
 - Azure DevOps Services only (not Azure DevOps Server).
 - Configuration audit, not a penetration test; it does not scan repository content
   for secrets.
-- Not covered yet: PAT inventory, marketplace extensions. Classic release checks follow
-  the official API schema; they have not been exercised on a live classic release yet.
+- 30 of 33 checks have been seen reporting on a live organization; SEC004, SEC006 and
+  IAM003 are covered by offline tests only.
 
 ## License
 

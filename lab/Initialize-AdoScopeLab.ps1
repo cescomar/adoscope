@@ -222,6 +222,42 @@ function Initialize-LabProtectedRepository {
     Write-Output 'created repository lab-protected with a 2-reviewer policy'
 }
 
+function Initialize-LabRelease {
+    [CmdletBinding(SupportsShouldProcess)]
+    param($Project)
+    $vsrm = "https://vsrm.dev.azure.com/$Organization/$($Project.id)/_apis/release/definitions"
+    $existing = @((Invoke-RestMethod "${vsrm}?api-version=7.1" -Headers @{ Authorization = $authHeader }).value | ForEach-Object name)
+    if ('lab-release' -in $existing -or -not $PSCmdlet.ShouldProcess('lab-release', 'Create classic release')) { return }
+    $queueId = @((Invoke-LabApi GET "$($Project.id)/_apis/distributedtask/queues?queueName=Azure%20Pipelines").value)[0].id
+    $me = (Invoke-LabApi GET '_apis/connectionData' -Version '7.1-preview.1').authenticatedUser.id
+    $stage = {
+        param($Name, $Rank, $Approvals, $Options)
+        @{
+            name = $Name; rank = $Rank; variables = @{}; conditions = @(); owner = @{ id = $me }
+            retentionPolicy = @{ daysToKeep = 30; releasesToKeep = 3; retainBuild = $true }
+            preDeployApprovals = @{ approvals = $Approvals; approvalOptions = $Options }
+            postDeployApprovals = @{ approvals = @(@{ rank = 1; isAutomated = $true; isNotificationOn = $false }) }
+            deployPhases = @(@{ rank = 1; phaseType = 'agentBasedDeployment'; name = 'Run on agent'; workflowTasks = @()
+                    deploymentInput = @{ queueId = $queueId } })
+        }
+    }
+    # Production: automatic approval only (PIP004). prod-eu: the release creator may approve (PIP005).
+    # DeployPassword: credential-shaped synthetic value in plain text (SEC012).
+    $body = @{
+        name = 'lab-release'; path = '\'; releaseNameFormat = 'Release-$(rev:r)'
+        variables = @{ DeployPassword = @{ value = ('labr2345' * 6 + 'labr'); isSecret = $false } }
+        environments = @(
+            (& $stage 'Production' 1 @(@{ rank = 1; isAutomated = $true; isNotificationOn = $false }) @{ releaseCreatorCanBeApprover = $false })
+            (& $stage 'prod-eu' 2 @(@{ rank = 1; isAutomated = $false; isNotificationOn = $false; approver = @{ id = $me } }) @{ releaseCreatorCanBeApprover = $true; requiredApproverCount = 0; executionOrder = 'beforeGates' })
+        )
+    }
+    try {
+        $null = Invoke-RestMethod "${vsrm}?api-version=7.1" -Method Post -Headers @{ Authorization = $authHeader } -ContentType 'application/json' -Body ($body | ConvertTo-Json -Depth 20)
+        Write-Output 'created classic release lab-release'
+    }
+    catch { Write-Warning "lab-release not created (classic release creation disabled?): $($_.ErrorDetails.Message ?? $_.Exception.Message)" }
+}
+
 $project = Initialize-LabProject
 if (-not $project) { return }
 Write-Output "project: $($project.name) ($($project.id))"
@@ -233,4 +269,5 @@ Initialize-LabServiceConnection $project
 Initialize-LabLibrary $project
 Initialize-LabEnvironment $project
 Initialize-LabProtectedRepository $project
+Initialize-LabRelease $project
 Write-Output "lab ready - delete project '$ProjectName' to remove everything"

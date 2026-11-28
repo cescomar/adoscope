@@ -5,9 +5,10 @@ $script:PreviewApiVersion = @{
     BuildGeneralSettings = '7.1-preview.1'
     CheckConfigurations  = '7.1-preview.1'
     Graph                = '7.1-preview.1'
+    ExtensionManagement  = '7.1-preview.1'
     UserEntitlements     = '7.1-preview.3'
 }
-$script:AllowedHosts = @('dev.azure.com', 'vsaex.dev.azure.com', 'vssps.dev.azure.com', 'vsrm.dev.azure.com')
+$script:AllowedHosts = @('dev.azure.com', 'vsaex.dev.azure.com', 'vssps.dev.azure.com', 'vsrm.dev.azure.com', 'extmgmt.dev.azure.com')
 $script:MaxAttempts = 5
 
 function Invoke-AdoScopeRequest {
@@ -159,7 +160,7 @@ function Get-AdoScopeApiUri {
         [Parameter(Mandatory)][string]$Organization,
         [Parameter(Mandatory)][string]$Path,
         [hashtable]$Query = @{},
-        [ValidateSet('dev', 'vsaex', 'vssps', 'vsrm')][string]$Service = 'dev',
+        [ValidateSet('dev', 'vsaex', 'vssps', 'vsrm', 'extmgmt')][string]$Service = 'dev',
         [string]$ApiVersion = $script:ApiVersion
     )
 

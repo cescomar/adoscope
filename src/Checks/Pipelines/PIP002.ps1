@@ -2,6 +2,7 @@
     Id          = 'PIP002'
     Title       = 'Production environment without Required template check'
     Category    = 'Pipelines'
+    Standards   = @('CICD-SEC-1')
     Severity    = 'Medium'
     Rationale   = 'Approvals check who deploys, not how. Without a Required template check, a pipeline can deploy to production with arbitrary steps, skipping the security scans, tests and controls built into the approved template.'
     Remediation = 'In Pipelines > Environments > the environment > Approvals and checks, add "Required template" pointing to your approved pipeline template, so only pipelines that extend it can deploy.'

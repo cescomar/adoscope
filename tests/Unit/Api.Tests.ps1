@@ -27,6 +27,7 @@ Describe 'Invoke-AdoScopeRequest' {
         @{ Target = 'https://example.com/x' }
         @{ Target = 'http://dev.azure.com/org/_apis/projects' }
         @{ Target = 'https://dev.azure.com.attacker.example/x' }
+        @{ Target = 'https://extmgmt.dev.azure.com.attacker.example/x' }
     ) {
         Mock Invoke-WebRequest -ModuleName adoscope { throw 'must not be called' }
         { InModuleScope adoscope -Parameters @{ U = $Target; A = $auth } {

@@ -3,6 +3,32 @@
 All notable changes to adoscope. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Personal access token inventory** (`PersonalAccessTokens`, Token Admin API, metadata only):
+  **IAM006** (High) full-access token, **IAM007** (Medium) lifetime above `maxDays` (90),
+  **IAM008** (Medium) token valid in all organizations. Verified live.
+- **OWASP Top 10 CI/CD Security Risks** mapping: optional `Standards` check metadata
+  (validated), shown in HTML, SARIF rule tags and `docs/checks.md`; every security check is mapped.
+
+- **SEC013** (Medium): third-party marketplace extension with write, execute or manage
+  scopes (`Extensions` collection; host `extmgmt.dev.azure.com` added to the allow-list).
+  `vso.extension.*` scopes (the extension's own data) are ignored. Verified live by
+  installing and removing a marketplace extension.
+- **AGT003** verified live with a temporary agent (registered, stopped, removed).
+- Classic build and release in the lab: PIP003, PIP004, PIP005 and SEC012 verified live and
+  added to the nightly lab check (15 expected findings). SEC005 verified live once.
+- `lab/lab.config.psd1`: the lab check skips HYG001/HYG002, which would start reporting the
+  never-run lab resources after 90/180 days and fail the nightly job on their own.
+
+### Fixed
+
+- **AGT001** no longer reports empty agent pools (the built-in `Default` pool, shared by
+  every project, has no agents). Found by running the checks on real data with lowered
+  thresholds.
+
 ## [0.2.0] - 2026-11-28
 
 ### Added

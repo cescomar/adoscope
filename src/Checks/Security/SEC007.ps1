@@ -2,6 +2,7 @@
     Id          = 'SEC007'
     Title       = 'Azure service connection uses a certificate'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-6')
     Severity    = 'Medium'
     Rationale   = 'A certificate is stronger than a client secret but is still a long-lived credential stored in Azure DevOps that must be rotated. Workload identity federation stores no credential at all.'
     Remediation = 'Convert the service connection to workload identity federation, then remove the certificate from the app registration in Entra ID.'

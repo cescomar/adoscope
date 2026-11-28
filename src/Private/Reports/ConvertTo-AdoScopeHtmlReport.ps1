@@ -6,7 +6,9 @@ function ConvertTo-AdoScopeHtmlReport {
     $encode = { param($Value) [System.Net.WebUtility]::HtmlEncode([string]$Value) }
     $order = $script:Severities[($script:Severities.Count - 1)..0]   # Critical first
     $rank = @{ Expression = { [array]::IndexOf($script:Severities, $_.Severity) }; Descending = $true }
-    $findings = @($Report.Findings | Sort-Object $rank, CheckId, Project, Resource | ForEach-Object { ConvertTo-AdoScopeHtmlFinding -Finding $_ -Encode $encode }) -join [Environment]::NewLine
+    $standards = @{}
+    foreach ($rule in $Report.Rules) { $standards[$rule.Id] = (@($rule.Standards) | Where-Object { $_ }) -join ', ' }
+    $findings = @($Report.Findings | Sort-Object $rank, CheckId, Project, Resource | ForEach-Object { ConvertTo-AdoScopeHtmlFinding -Finding $_ -Encode $encode -Standard $standards[$_.CheckId] }) -join [Environment]::NewLine
     $categories = @($Report.Rules.Category | Sort-Object -Unique | ForEach-Object { "<option value='$(& $encode $_)'>$(& $encode $_)</option>" }) -join ''
     $severity = @($order | ForEach-Object { "<option value='$(& $encode $_)'>$(& $encode $_)</option>" }) -join ''
     $counts = @(foreach ($sev in $order) {
@@ -32,8 +34,9 @@ function ConvertTo-AdoScopeHtmlReport {
 function ConvertTo-AdoScopeHtmlFinding {
     [CmdletBinding()]
     [OutputType([string])]
-    param([Parameter(Mandatory)][pscustomobject]$Finding, [Parameter(Mandatory)][scriptblock]$Encode)
+    param([Parameter(Mandatory)][pscustomobject]$Finding, [Parameter(Mandatory)][scriptblock]$Encode, [string]$Standard)
 
     $value = { param($Name) & $Encode $Finding.$Name }
-    "<tr class='$(& $Encode $(if ($Finding.Suppressed) { 'suppressed' } else { '' }))' data-category='$(& $value 'Category')' data-severity='$(& $value 'Severity')' data-suppressed='$($Finding.Suppressed.ToString().ToLowerInvariant())'><td class='severity'><span class='badge sev-$(& $value 'Severity')'>$(& $value 'Severity')</span></td><td>$(& $value 'CheckId')</td><td>$(& $value 'Title')</td><td>$(& $value 'Project')</td><td>$(& $value 'Resource')</td><td>$(& $value 'Detail')</td><td>$(& $value 'Remediation')</td></tr>"
+    $standardNote = if ($Standard) { "<br><small>$(& $Encode $Standard)</small>" } else { '' }
+    "<tr class='$(& $Encode $(if ($Finding.Suppressed) { 'suppressed' } else { '' }))' data-category='$(& $value 'Category')' data-severity='$(& $value 'Severity')' data-suppressed='$($Finding.Suppressed.ToString().ToLowerInvariant())'><td class='severity'><span class='badge sev-$(& $value 'Severity')'>$(& $value 'Severity')</span></td><td>$(& $value 'CheckId')$standardNote</td><td>$(& $value 'Title')</td><td>$(& $value 'Project')</td><td>$(& $value 'Resource')</td><td>$(& $value 'Detail')</td><td>$(& $value 'Remediation')</td></tr>"
 }

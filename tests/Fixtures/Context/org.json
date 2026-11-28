@@ -186,6 +186,35 @@
           "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } }
       ]
     },
+    "PersonalAccessTokens": {
+      "Status": "Ok",
+      "Items": [
+        { "user": "alice@contoso.example", "authorizationId": "00000000-0000-0000-0000-0000000000p1", "displayName": "deploy-script", "scope": "app_token",
+          "validFrom": "2026-05-01T00:00:00Z", "validTo": "2026-06-30T00:00:00Z", "isValid": true, "allOrganizations": false },
+        { "user": "alice@contoso.example", "authorizationId": "00000000-0000-0000-0000-0000000000p2", "displayName": "code-read", "scope": "vso.code",
+          "validFrom": "2026-01-01T00:00:00Z", "validTo": "2027-01-01T00:00:00Z", "isValid": true, "allOrganizations": true },
+        { "user": "bob@contoso.example", "authorizationId": "00000000-0000-0000-0000-0000000000p3", "displayName": "old-full", "scope": "app_token",
+          "validFrom": "2025-01-01T00:00:00Z", "validTo": "2026-01-01T00:00:00Z", "isValid": true, "allOrganizations": true },
+        { "user": "bob@contoso.example", "authorizationId": "00000000-0000-0000-0000-0000000000p4", "displayName": "revoked-full", "scope": "app_token",
+          "validFrom": "2026-05-01T00:00:00Z", "validTo": "2027-05-01T00:00:00Z", "isValid": false, "allOrganizations": true },
+        { "user": "carol@contoso.example", "userDescriptor": "aad.carol", "_error": "personal access tokens of 'carol@contoso.example': HTTP 403" },
+        { "user": "erin@contoso.example", "authorizationId": "00000000-0000-0000-0000-0000000000p5" }
+      ]
+    },
+    "Extensions": {
+      "Status": "Ok",
+      "Items": [
+        { "publisherId": "ms", "extensionId": "vss-pipelines", "extensionName": "Pipelines", "flags": "builtIn, trusted", "installFlags": "builtIn, multiVersion, trusted", "scopes": [] },
+        { "publisherId": "contoso-tools", "extensionId": "auto-merge", "extensionName": "Auto Merge", "publisherName": "Contoso Tools", "flags": "none", "installFlags": "none",
+          "scopes": [ "vso.code_write", "vso.build_execute", "vso.work" ] },
+        { "publisherId": "contoso-tools", "extensionId": "board-colors", "extensionName": "Board Colors", "publisherName": "Contoso Tools", "flags": "none", "installFlags": "none",
+          "scopes": [ "vso.work", "vso.profile", "vso.extension.data_write" ] },
+        { "publisherId": "oldvendor", "extensionId": "sync", "extensionName": "Old Sync", "publisherName": "Old Vendor", "flags": "none", "installFlags": "disabled",
+          "scopes": [ "vso.code_full" ] },
+        { "publisherId": "ms-devlabs", "extensionId": "trusted-thing", "flags": "trusted", "scopes": [ "vso.code_manage" ] },
+        { "extensionId": "minimal" }
+      ]
+    },
     "ReleaseDefinitions": {
       "Status": "Ok",
       "Items": [
@@ -215,7 +244,9 @@
         { "id": 34, "name": "Azure Pipelines", "pool": { "id": 9, "name": "Azure Pipelines", "isHosted": true }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
         { "id": 35, "name": "api-only", "pool": { "id": 21, "name": "api-only", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } },
         { "id": 36, "name": "shared-linux", "pool": { "id": 20, "name": "shared-linux", "isHosted": false }, "_project": { "id": "00000000-0000-0000-0000-0000000000a3", "name": "data" } },
-        { "id": 37, "name": "orphan" }
+        { "id": 37, "name": "orphan" },
+        { "id": 38, "name": "Default", "pool": { "id": 1, "name": "Default", "isHosted": false, "size": 0 }, "_project": { "id": "00000000-0000-0000-0000-0000000000a1", "name": "web" } },
+        { "id": 39, "name": "Default", "pool": { "id": 1, "name": "Default", "isHosted": false, "size": 0 }, "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } }
       ]
     },
     "AgentPools": {

@@ -2,6 +2,7 @@
     Id          = 'SEC008'
     Title       = 'Variable group with secrets authorized for all pipelines'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-5')
     Severity    = 'High'
     Rationale   = 'Every pipeline in the project, including one created from a feature branch, can read the secrets of this variable group without approval. Anyone who can edit a pipeline can print or exfiltrate them.'
     Remediation = 'In Pipelines > Library > the variable group > Pipeline permissions, remove "open access" and authorize only the pipelines that need it. Add approvals for production secrets, or link the group to Azure Key Vault with restricted access.'

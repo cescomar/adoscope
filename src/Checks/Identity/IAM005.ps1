@@ -2,6 +2,7 @@
     Id          = 'IAM005'
     Title       = 'Organization not connected to Microsoft Entra ID'
     Category    = 'Identity'
+    Standards   = @('CICD-SEC-2')
     Severity    = 'Medium'
     Rationale   = 'Administrators sign in with personal Microsoft accounts, which exist only in organizations not connected to Entra ID. Then MFA, conditional access, sign-in risk policies and central offboarding cannot be enforced: each account is protected only by its owner''s own settings.'
     Remediation = 'Connect the organization to your Microsoft Entra ID tenant (Organization settings > Microsoft Entra), map existing users to work accounts, then enforce MFA and conditional access in Entra ID.'

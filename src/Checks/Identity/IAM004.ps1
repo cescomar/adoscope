@@ -2,6 +2,7 @@
     Id          = 'IAM004'
     Title       = 'Too many Project Administrators'
     Category    = 'Identity'
+    Standards   = @('CICD-SEC-2')
     Severity    = 'Medium'
     Rationale   = 'Project Administrators can change pipelines, repositories, branch policies, service connections and permissions of the project, including removing the controls other checks rely on. Broad membership widens the attack surface and blurs accountability.'
     Remediation = 'Reduce Project Administrators to the project owners. Grant contributors the narrower groups they need (Contributors, Build Administrators, Release Administrators), ideally through Entra ID groups with periodic access reviews.'

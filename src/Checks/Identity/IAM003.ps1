@@ -2,6 +2,7 @@
     Id          = 'IAM003'
     Title       = 'Guest account with administrator rights'
     Category    = 'Identity'
+    Standards   = @('CICD-SEC-2')
     Severity    = 'High'
     Rationale   = 'A guest (Entra ID B2B) account is managed by another organization: its password, MFA and offboarding are outside your control. With administrator rights, a compromise or a missed offboarding on their side gives full control of your Azure DevOps.'
     Remediation = 'Remove guest accounts from administrator groups. If an external partner needs elevated access, grant the narrowest project role, time-bound, and review it regularly; consider disabling "External guest access" in Organization settings > Policies.'

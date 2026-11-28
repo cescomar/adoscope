@@ -2,6 +2,7 @@
     Id          = 'SEC012'
     Title       = 'Credential stored as a plain-text variable in a classic release'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-6')
     Severity    = 'Critical'
     Rationale   = 'A release or stage variable not marked as secret is visible in the release editor, returned by the REST API to anyone who can read the release, and printed unmasked in deployment logs. A credential stored this way must be considered leaked.'
     Remediation = 'Revoke and rotate the credential now. Store the new one as a secret variable (lock icon), in a variable group linked to Azure Key Vault, or replace it with a service connection using workload identity federation.'

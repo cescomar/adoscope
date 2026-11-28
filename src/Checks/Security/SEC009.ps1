@@ -2,6 +2,7 @@
     Id          = 'SEC009'
     Title       = 'Credential stored as a plain-text variable in a variable group'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-6')
     Severity    = 'Critical'
     Rationale   = 'A variable not marked as secret is shown in clear text in the UI, returned by the REST API to anyone who can read the variable group, and printed unmasked in pipeline logs. A credential stored this way must be considered leaked.'
     Remediation = 'Revoke and rotate the credential now. Store the new one as a secret variable (lock icon) or, better, in Azure Key Vault linked to the variable group; prefer workload identity federation where the target supports it.'

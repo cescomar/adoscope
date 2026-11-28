@@ -25,7 +25,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot '../adoscope.psd1') -Force
 try {
-    $report = Invoke-AdoScope -Organization $Organization -Project $ProjectName -Quiet -PassThru -WarningAction SilentlyContinue
+    $report = Invoke-AdoScope -Organization $Organization -Project $ProjectName -ConfigPath (Join-Path $PSScriptRoot 'lab.config.psd1') `
+        -Quiet -PassThru -WarningAction SilentlyContinue
 }
 catch {
     [Console]::Error.WriteLine("lab audit failed: $($_.Exception.Message)")

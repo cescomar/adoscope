@@ -36,6 +36,7 @@ Describe 'Import-AdoScopeCheck' {
         @{ Case = 'Id/file mismatch'; File = 'XXX002'; Replace = 'x'; With = 'x'; Expected = '*file name must match*' }
         @{ Case = 'missing Test'; File = 'XXX001'; Replace = 'Test = {'; With = 'NoTest = {'; Expected = "*'Test'*" }
         @{ Case = 'empty Requires'; File = 'XXX001'; Replace = "@('Projects')"; With = '@()'; Expected = "*'Requires'*" }
+        @{ Case = 'an unknown standard id'; File = 'XXX001'; Replace = "Category = 'c'"; With = "Category = 'c'; Standards = @('CICD-SEC-11')"; Expected = '*invalid Standards*' }
     ) {
         InModuleScope adoscope -Parameters @{ Root = $TestDrive; Body = $script:valid.Replace($Replace, $With); File = $File; Expected = $Expected } {
             param($Root, $Body, $File, $Expected)

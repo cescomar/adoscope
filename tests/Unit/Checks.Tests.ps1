@@ -23,6 +23,7 @@ Describe 'Built-in checks' {
         @{ Id = 'SEC010'; Expected = @('signing.pfx') }
         @{ Id = 'SEC011'; Expected = @('api-never-new', 'web-ci') }              # secret NugetKey and plain BuildConfig not flagged
         @{ Id = 'SEC012'; Expected = @('web-release') }                          # definition and stage variables; secret and TokenUrl skipped
+        @{ Id = 'SEC013'; Expected = @('Auto Merge') }                           # read-only scopes, disabled, built-in and trusted skipped
         @{ Id = 'PIP001'; Expected = @('live', 'production') }                  # disabled check does not count; unreadable checks (prod-unreadable) are not "missing"
         @{ Id = 'PIP002'; Expected = @('live', 'prod-eu', 'production') }
         @{ Id = 'PIP003'; Expected = @('web-classic') }
@@ -40,6 +41,9 @@ Describe 'Built-in checks' {
         @{ Id = 'IAM003'; Expected = @('dan@partner.example') }                                 # one finding across two groups
         @{ Id = 'IAM004'; Expected = @('[api]\Project Administrators') }
         @{ Id = 'IAM005'; Expected = @('contoso-sample') }
+        @{ Id = 'IAM006'; Expected = @('alice@contoso.example/deploy-script') }  # expired, revoked and unreadable tokens skipped
+        @{ Id = 'IAM007'; Expected = @('alice@contoso.example/code-read') }      # 365 days; deploy-script is 60
+        @{ Id = 'IAM008'; Expected = @('alice@contoso.example/code-read') }
     ) {
         ($result.Checks | Where-Object CheckId -eq $Id).Status | Should -Be 'Evaluated'
         (@($result.Findings | Where-Object CheckId -eq $Id | ForEach-Object Resource | Sort-Object) -join ', ') | Should -Be ($Expected -join ', ')
@@ -56,6 +60,8 @@ Describe 'Built-in checks' {
         @{ Id = 'IAM002'; Resource = 'bob@contoso.example'; Detail = 'Last access 151 days ago; threshold 90 days. Administrator in: [contoso-sample]\Project Collection Administrators.' }
         @{ Id = 'IAM003'; Resource = 'dan@partner.example'; Detail = 'Guest account is administrator in: [contoso-sample]\Project Collection Administrators, [web]\Project Administrators.' }
         @{ Id = 'IAM005'; Resource = 'contoso-sample'; Detail = '1 administrator(s) sign in with a personal Microsoft account; the organization is not backed by Entra ID.' }
+        @{ Id = 'IAM006'; Resource = 'alice@contoso.example/deploy-script'; Detail = "Token 'deploy-script' of alice@contoso.example has full access; valid until 2026-06-30." }
+        @{ Id = 'IAM007'; Resource = 'alice@contoso.example/code-read'; Detail = "Token 'code-read' of alice@contoso.example is valid for 365 days (until 2027-01-01); maximum 90." }
     ) {
         ($result.Findings | Where-Object { $_.CheckId -eq $Id -and $_.Resource -eq $Resource }).Detail | Should -Be $Detail
     }
@@ -86,6 +92,15 @@ Describe 'Built-in checks' {
         }
         $findings.Resource | Should -Be 'shared-linux'
         $findings.Detail | Should -Be "Pool 'shared-linux' is used by trust groups dev, prod (projects: api, data, web)."
+    }
+
+    It 'every security, identity, pipeline and agent check maps to an OWASP CI/CD risk' {
+        InModuleScope adoscope -Parameters @{ Root = (Join-Path $PSScriptRoot '../..') } {
+            param($Root)
+            foreach ($check in Import-AdoScopeCheck -Path (Join-Path $Root 'src/Checks') | Where-Object Category -in 'Security', 'Identity', 'Pipelines', 'Agents') {
+                @($check.Standards).Count | Should -BeGreaterThan 0 -Because "$($check.Id) is a security check"
+            }
+        }
     }
 
     It 'every built-in check has complete metadata for reports' {

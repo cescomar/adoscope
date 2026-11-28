@@ -24,7 +24,7 @@ and to security engineers (credentials, permissions, pipeline risks).
    configurations are read with one GET per environment), so there is no allow-list.
    Adding a non-GET call requires asking first (§13).
 2. **Host allow-list.** The client only sends credentials to: `dev.azure.com`,
-   `vsaex.dev.azure.com`, `vssps.dev.azure.com`, `vsrm.dev.azure.com`,
+   `vsaex.dev.azure.com`, `vssps.dev.azure.com`, `vsrm.dev.azure.com`, `extmgmt.dev.azure.com`,
    `*.visualstudio.com` (legacy org URLs returned in `_links`), and Entra ID
    (`login.microsoftonline.com`). Anything else is rejected, including
    continuation/next links.
@@ -252,6 +252,7 @@ Each check is a hashtable returned by its file; file name = `Id`:
     Rationale   = '...'
     Remediation = '...'
     Parameters  = @{ days = 90 }   # defaults, overridable via config
+    Standards   = @('CICD-SEC-1')  # optional: OWASP Top 10 CI/CD ids, validated at load
     Requires    = @('BuildDefinitions')   # context collections needed
     Test = {
         param($Context, $Parameters)
@@ -280,7 +281,26 @@ Invalid or duplicate checks are terminating errors at load time.
 - SEC006 honours project/org fork protection (`forkProtectionEnabled`,
   `buildsEnabledForForks`, `enforceNoAccessToSecretsFromForks`, `enforceJobAuthScopeForForks`).
 - PIP002 detects the Required template check instead of parsing YAML `extends:`.
-- AGT001 needs `trustGroups` in the config; without it, it reports nothing.
+- AGT001 needs `trustGroups` in the config; without it, it reports nothing. Empty pools
+  (`pool.size = 0`) are skipped: the built-in `Default` pool is shared by every project but
+  usually has no agents (false positive found live).
+- **Live verification by lowered thresholds** (no change to the organization): with a
+  temporary config (`days = 0`, `maxMembers = 0`, `maxFailureRate = 0`, trust groups), AGT001,
+  HYG002, CST001, REL001, IAM001, IAM002 and IAM004 fired on real data with correct details.
+  This proves they read the real API shapes; the thresholds themselves are covered by
+  fixtures.
+- **Live verification with temporary organization changes** (authorized by the owner; state
+  snapshotted before and compared identical after): SEC013 (installed `cschleiden.prtemplates`,
+  reported with `vso.code_write`, uninstalled); AGT003 (agent 5.282.0 registered in a dedicated
+  pool scoped to the lab, started, stopped, reported offline, removed). SEC004 could not be
+  exercised: the organization policy forbids public projects and has no public API.
+  Organization pipeline settings have no public API either ("use the UI", Microsoft Learn): the
+  owner disabled classic creation and job scope enforcement in the UI, the lab gained a classic
+  build (`lab-classic`) and a classic release (`lab-release`: Production with automatic approval,
+  prod-eu where the creator may approve, a plain-text credential), PIP003, PIP004, PIP005,
+  SEC012 and SEC005 all reported live, then the owner re-enabled the settings and the snapshot
+  compared identical. Existing classic definitions survive the re-enabled ban, so PIP003,
+  PIP004, PIP005 and SEC012 are now in the nightly lab check; SEC005 stays a one-off test.
 - Time-based checks measure from `CollectedAt`; text in details is culture-independent.
 
 Identity checks (IAM001–IAM005) read the `AdminGroups` collection: Project Collection
@@ -297,14 +317,32 @@ Classic release checks (PIP004, PIP005, SEC012) read `ReleaseDefinitions` from
 `vsrm.dev.azure.com`: the list endpoint, then one GET per definition (the list omits stage
 approvals and variables). Kept per stage: approvals (`isAutomated` only, no approver
 identities), `releaseCreatorCanBeApprover`, gate count, variables without values.
-**Not verified live:** the test organization has no classic releases and enforces
-`disableClassicReleasePipelineCreation`; the endpoints answer 200 with an empty list, and the
-item shape follows the official schema (Definitions - Get, 7.1). PIP004/PIP005 skip
+**Verified live** (see the lab notes above): the item shape of the official schema
+(Definitions - Get, 7.1) matched a real classic release. PIP004/PIP005 skip
 definitions that could not be read (unknown, not unprotected).
 
-Not implemented: variable groups not linked to Key Vault, PAT inventory (no admin API for
-other users' PATs), marketplace extensions (needs host `extmgmt.dev.azure.com`), fine-grained
-permissions such as who can edit pipelines (security namespace ACL bits; high risk of wrong results).
+SEC013 reads `Extensions` from `extmgmt.dev.azure.com` (installed extensions, added to the
+host allow-list with the owner's approval). **Observed:** built-in Microsoft extensions carry
+`flags = 'builtIn, trusted'` and no scopes; the test organization has only those (30). The
+check also ran live with a third-party extension installed (see above). `vso.extension.*`
+scopes (e.g. `vso.extension.data_write`, seen on marketplace extensions) only reach the
+extension's own data store and are ignored.
+
+PAT checks (IAM006 full access, IAM007 lifetime above `maxDays`, IAM008 valid in all
+organizations) read `PersonalAccessTokens`: the Token Admin API on `vssps`, one call per
+licensed user, metadata only (name, scope, validity, target organizations). **Observed:**
+the API returns `token`/`alternateToken` empty and full-access tokens as `scope = app_token`;
+the collector keeps an allow-list regardless. `allOrganizations` (no target accounts) is
+inferred from the schema; the test tokens were single-organization. Needs Project Collection
+Administrator; a user whose tokens cannot be read makes the collection Partial.
+
+Standards: every Security, Identity, Pipelines and Agents check carries `Standards` with
+OWASP Top 10 CI/CD Security Risks ids (CICD-SEC-1..10), mapped from the official risk
+descriptions; a test enforces it. Hygiene, cost and reliability checks map to none. CIS was
+not used: no official CIS benchmark for Azure DevOps was found to cite.
+
+Not implemented: variable groups not linked to Key Vault; fine-grained permissions such as
+who can edit pipelines (security namespace ACL bits; high risk of wrong results).
 
 ## 7. Configuration
 

@@ -2,6 +2,7 @@
     Id          = 'SEC003'
     Title       = 'Default branch without required reviewers'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-1')
     Severity    = 'Medium'
     Rationale   = 'Without a blocking minimum-reviewers policy, anyone with contribute rights can push or merge to the default branch, and pipelines deploy whatever lands there. One compromised account is enough to ship code.'
     Remediation = 'In Project settings > Repositories > Policies (or the branch policies of the default branch), enable "Require a minimum number of reviewers" as a required policy, with at least the configured number of reviewers and without allowing requestors to approve their own changes.'

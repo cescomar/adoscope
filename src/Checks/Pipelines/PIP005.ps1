@@ -2,6 +2,7 @@
     Id          = 'PIP005'
     Title       = 'Release creator can approve their own production deployment'
     Category    = 'Pipelines'
+    Standards   = @('CICD-SEC-1')
     Severity    = 'Medium'
     Rationale   = 'When the person who creates a release may also approve it, one account is enough to push a change to production: the approval becomes a formality and separation of duties is lost.'
     Remediation = 'In the pre-deployment conditions of the stage, open Approval policies and enable "The user requesting a release or deployment should not approve it". Use an approver group with at least two members.'

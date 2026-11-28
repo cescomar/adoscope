@@ -2,6 +2,7 @@
     Id          = 'AGT003'
     Title       = 'Self-hosted agent offline for a long time'
     Category    = 'Agents'
+    Standards   = @('CICD-SEC-7')
     Severity    = 'Low'
     Rationale   = 'An agent offline for weeks is usually a decommissioned machine still registered: it keeps its access token, clutters capacity planning and may come back unpatched.'
     Remediation = 'Confirm the machine is gone, then remove the agent from the pool (Agent pools > the pool > Agents > Delete). If it is still needed, bring it back online and patch it first.'

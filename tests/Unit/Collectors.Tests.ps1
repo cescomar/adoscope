@@ -71,6 +71,32 @@ Describe 'Get-AdoReleaseDefinition' {
     }
 }
 
+Describe 'Get-AdoPersonalAccessToken' {
+    It 'keeps metadata only, and turns an unreadable user into a Partial collection' {
+        # Synthetic credential-shaped value (legacy PAT format), not a real token.
+        $script:fakePat = 'mnop2345' * 6 + 'mnop'
+        Mock Get-AdoProject -ModuleName adoscope { @() }
+        Mock Invoke-AdoScopeListRequest -ModuleName adoscope {
+            if ($Uri.AbsolutePath -like '*userentitlements*') {
+                @{ user = @{ principalName = 'a@contoso.example'; descriptor = 'aad.a' } }
+                @{ user = @{ principalName = 'b@contoso.example'; descriptor = 'aad.b' } }
+            }
+            elseif ($Uri.AbsolutePath -like '*/aad.b') { throw [System.Net.Http.HttpRequestException]::new('HTTP 403', $null, [System.Net.HttpStatusCode]::Forbidden) }
+            else {
+                @{ authorizationId = 'x'; displayName = 'ci'; scope = 'app_token'; validFrom = '2026-01-01'; validTo = '2026-02-01'; isValid = $true
+                    token = $script:fakePat; alternateToken = $script:fakePat; targetAccounts = $null }
+            }
+        }
+        $collection = InModuleScope adoscope {
+            (Get-AdoScopeContext -Organization 'o' -Auth ([pscustomobject]@{}) -Collection 'PersonalAccessTokens' -WarningAction SilentlyContinue).Collections.PersonalAccessTokens
+        }
+        ($collection | ConvertTo-Json -Depth 10) | Should -Not -Match $script:fakePat
+        $collection.Status | Should -Be 'Partial'
+        ($collection.Items | Where-Object user -eq 'a@contoso.example').allOrganizations | Should -BeTrue
+        ($collection.Items | Where-Object user -eq 'b@contoso.example')._error | Should -Match 'HTTP 403'
+    }
+}
+
 Describe 'Get-AdoScopeContext organization-wide collections' {
     It 'marks an organization collection Forbidden when the call is denied, without failing the run' {
         Mock Get-AdoProject -ModuleName adoscope { @(@{ id = 'p1'; name = 'alpha' }) }

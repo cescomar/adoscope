@@ -1,6 +1,9 @@
 [
   "PIP001 production",
   "PIP002 production",
+  "PIP003 lab-classic",
+  "PIP004 lab-release/Production",
+  "PIP005 lab-release/prod-eu",
   "SEC001 lab-azurerm-secret",
   "SEC001 lab-generic",
   "SEC002 lab-azurerm-secret",
@@ -9,5 +12,6 @@
   "SEC008 lab-vg-secrets",
   "SEC009 lab-vg-plain",
   "SEC010 lab-signing.pfx",
-  "SEC011 lab-yaml"
+  "SEC011 lab-yaml",
+  "SEC012 lab-release"
 ]

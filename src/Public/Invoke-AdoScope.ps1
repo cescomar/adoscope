@@ -165,7 +165,7 @@ function New-AdoScopeReportRule {
 
     $parameters = $Check.Parameters.Clone()
     if ($Override) { foreach ($key in $Override.Keys) { $parameters[$key] = $Override[$key] } }
-    [pscustomobject]@{ Id = $Check.Id; Title = $Check.Title; Category = $Check.Category; Severity = $Check.Severity; Rationale = $Check.Rationale; Remediation = $Check.Remediation; Parameters = $parameters }
+    [pscustomobject]@{ Id = $Check.Id; Title = $Check.Title; Category = $Check.Category; Severity = $Check.Severity; Rationale = $Check.Rationale; Remediation = $Check.Remediation; Standards = @($Check['Standards']); Parameters = $parameters }
 }
 
 function Write-AdoScopeReportOutput {

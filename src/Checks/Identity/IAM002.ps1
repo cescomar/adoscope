@@ -2,6 +2,7 @@
     Id          = 'IAM002'
     Title       = 'Inactive administrator'
     Category    = 'Identity'
+    Standards   = @('CICD-SEC-2')
     Severity    = 'High'
     Rationale   = 'An administrator account nobody uses keeps full rights: it typically belongs to someone who changed role or left, is rarely monitored, and is a prime target because a takeover goes unnoticed.'
     Remediation = 'Confirm with the owner and remove the account from the administrator groups (or from the organization). Use time-bound elevation, for example Entra ID Privileged Identity Management on the group, instead of standing admin rights.'

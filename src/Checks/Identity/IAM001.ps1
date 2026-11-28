@@ -2,6 +2,7 @@
     Id          = 'IAM001'
     Title       = 'Too many Project Collection Administrators'
     Category    = 'Identity'
+    Standards   = @('CICD-SEC-2')
     Severity    = 'High'
     Rationale   = 'Project Collection Administrators can change every project, pipeline, service connection, policy and permission in the organization. Each extra member is one more account whose compromise exposes everything, and broad membership makes it hard to tell who approved what.'
     Remediation = 'Keep only a few named owners in Project Collection Administrators. Give others the narrower role they need (Project Administrators, Build Administrators, Endpoint Administrators), and prefer an Entra ID group with access reviews over individual accounts.'

@@ -2,6 +2,7 @@
     Id          = 'SEC001'
     Title       = 'Service connection authorized for all pipelines'
     Category    = 'Security'
+    Standards   = @('CICD-SEC-5')
     Severity    = 'High'
     Rationale   = 'Any pipeline in the project, including one created tomorrow from a feature branch, can use the credential without an approval, so anyone who can edit a pipeline can act with its permissions.'
     Remediation = 'In Project settings > Service connections > Security, disable "Grant access permission to all pipelines" and authorize only the pipelines that need it. Add approvals and checks for production connections.'
