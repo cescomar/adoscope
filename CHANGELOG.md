@@ -5,6 +5,24 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Baseline: "Resolved" now needs proof.** A baseline finding that is gone counts as
+  resolved only if its check is fully evaluated, its project is in scope and its
+  parameters are unchanged; otherwise it is counted as `Unverified` (report, console,
+  HTML). Before, a 403 on service connections turned their findings into "resolved".
+- **AGT001 without `trustGroups` is NotEvaluated** instead of a clean "Evaluated": it
+  cannot find anything unconfigured. `adoscope.ps1` therefore exits 2 by default until
+  `trustGroups` are set or AGT001 is disabled. New optional check metadata
+  `RequiredParameters`.
+- **Config parameter values are validated** before any API call (type from the default,
+  positive numbers, plus check rules through optional `Validate` metadata: AGT001,
+  AGT002, REL001). For example `HYG001.days = -30` was accepted before.
+- Reports carry their provenance: `Scope` (`CollectedAt`, `Mode` Live/Offline, analyzed
+  projects) and `SchemaVersion`; console and HTML show the collection date. Offline
+  contexts older than 7 days print a warning. Saved contexts carry `SchemaVersion`; a
+  context from a newer adoscope is rejected.
+
 ### Added
 
 - **Personal access token inventory** (`PersonalAccessTokens`, Token Admin API, metadata only):

@@ -48,6 +48,14 @@ Describe 'Import-AdoScopeConfig validation' {
         @{ Case = 'a suppression without Reason'; Body = "@{ Suppressions = @(@{ Check = 'SEC001'; ResourceId = 'x'; Expires = '2099-01-01' }) }"; Expected = '*needs a Reason*' }
         @{ Case = 'a suppression without target'; Body = "@{ Suppressions = @(@{ Check = 'SEC001'; Reason = 'r'; Expires = '2099-01-01' }) }"; Expected = '*Fingerprint or a ResourceId*' }
         @{ Case = 'a non-ISO expiry'; Body = "@{ Suppressions = @(@{ Check = 'SEC001'; ResourceId = 'x'; Reason = 'r'; Expires = '31/12/2099' }) }"; Expected = "*yyyy-MM-dd*" }
+        @{ Case = 'negative days'; Body = '@{ Checks = @{ Parameters = @{ HYG001 = @{ days = -30 } } } }'; Expected = "*HYG001.days has invalid value '-30': expected a whole number >= 1*" }
+        @{ Case = 'days as text'; Body = "@{ Checks = @{ Parameters = @{ HYG001 = @{ days = '30' } } } }"; Expected = '*HYG001.days*whole number*' }
+        @{ Case = 'a non-boolean switch'; Body = "@{ Checks = @{ Parameters = @{ SEC003 = @{ allowSelfApproval = 'no' } } } }"; Expected = '*SEC003.allowSelfApproval*$true or $false*' }
+        @{ Case = 'an unparsable version'; Body = "@{ Checks = @{ Parameters = @{ AGT002 = @{ minimumVersion = 'latest' } } } }"; Expected = '*minimumVersion must be a version*' }
+        @{ Case = 'incoherent run counts'; Body = '@{ Checks = @{ Parameters = @{ REL001 = @{ runs = 5; minimumRuns = 10 } } } }'; Expected = '*minimumRuns (10) must not exceed runs (5)*' }
+        @{ Case = 'a failure rate of 100% or more'; Body = '@{ Checks = @{ Parameters = @{ REL001 = @{ maxFailureRate = 30 } } } }'; Expected = '*fraction below 1*' }
+        @{ Case = 'a project in two trust groups'; Body = "@{ Checks = @{ Parameters = @{ AGT001 = @{ trustGroups = @{ prod = @('web'); dev = @('web', 'api') } } } } }"; Expected = "*project 'web' is in trust groups*" }
+        @{ Case = 'a single trust group'; Body = "@{ Checks = @{ Parameters = @{ AGT001 = @{ trustGroups = @{ prod = @('web') } } } } }"; Expected = '*at least two groups*' }
     ) {
         $path = Join-Path $TestDrive 'bad.config.psd1'
         Set-Content -LiteralPath $path -Value $Body

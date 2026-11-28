@@ -15,6 +15,11 @@ Describe 'Invoke-AdoScope' {
 
         $report.Tool | Should -Be 'adoscope'
         $report.Organization | Should -Be 'fabrikam-sample'
+        $report.SchemaVersion | Should -Be 1
+        $report.Scope.Mode | Should -Be 'Offline'
+        # The data's date, not the report's: an old context must not look like a fresh audit.
+        ([datetime]$report.Scope.CollectedAt).ToUniversalTime() | Should -Be ([datetime]((Get-Content $runArgs.ContextPath -Raw | ConvertFrom-Json -AsHashtable).CollectedAt)).ToUniversalTime()
+        $report.Scope.Projects | Should -Not -BeNullOrEmpty
         $report.Rules.Id | Should -Be 'TST001', 'TST002'
         $report.Findings.CheckId | Should -Be 'TST001'
         ($report.Checks | Where-Object CheckId -eq 'TST002').Status | Should -Be 'NotEvaluated'

@@ -193,11 +193,14 @@ directly on a variable (`$x?['k']` parses as variable `x?`); use `${x}?['k']`.
 Keys starting with `_` are added by collectors (`_project`, `_pipelinePermissions`,
 `_checks`, `_error`).
 `CollectedAt` is required; time-based checks measure from it, not from now.
+`SchemaVersion` (integer) changes when the shape changes incompatibly; a context without it
+is version 1, a newer one than this adoscope reads is rejected.
 
 ```powershell
 @{
-    Organization = 'org'
-    CollectedAt  = '2026-01-01T00:00:00Z'
+    SchemaVersion = 1
+    Organization  = 'org'
+    CollectedAt   = '2026-01-01T00:00:00Z'
     Collections  = @{
         Projects = @{ Status = 'Ok'; Items = @( @{ id = '...'; name = '...' } ); Error = $null }
     }
@@ -237,7 +240,9 @@ suppressions and SARIF `partialFingerprints`.
 
 One per check in every report: `Evaluated | Partial | NotEvaluated | Error`, with
 a message. `Error` = the check threw or emitted something that is not a finding;
-other checks continue.
+other checks continue. `NotEvaluated` also covers a check that is not configured: a
+parameter in its `RequiredParameters` is empty (AGT001 without `trustGroups`), so it could
+not find anything. Disable the check instead of leaving it unconfigured.
 
 ### Check file
 
@@ -252,6 +257,8 @@ Each check is a hashtable returned by its file; file name = `Id`:
     Rationale   = '...'
     Remediation = '...'
     Parameters  = @{ days = 90 }   # defaults, overridable via config
+    RequiredParameters = @()       # optional: parameters that must be non-empty, else NotEvaluated
+    Validate    = { param($Parameters) }   # optional: return error strings for bad values (meaning, coherence)
     Standards   = @('CICD-SEC-1')  # optional: OWASP Top 10 CI/CD ids, validated at load
     Requires    = @('BuildDefinitions')   # context collections needed
     Test = {
@@ -281,14 +288,14 @@ Invalid or duplicate checks are terminating errors at load time.
 - SEC006 honours project/org fork protection (`forkProtectionEnabled`,
   `buildsEnabledForForks`, `enforceNoAccessToSecretsFromForks`, `enforceJobAuthScopeForForks`).
 - PIP002 detects the Required template check instead of parsing YAML `extends:`.
-- AGT001 needs `trustGroups` in the config; without it, it reports nothing. Empty pools
+- AGT001 needs `trustGroups` in the config; without them it is NotEvaluated. Empty pools
   (`pool.size = 0`) are skipped: the built-in `Default` pool is shared by every project but
   usually has no agents (false positive found live).
 - **Live verification by lowered thresholds** (no change to the organization): with a
   temporary config (`days = 0`, `maxMembers = 0`, `maxFailureRate = 0`, trust groups), AGT001,
   HYG002, CST001, REL001, IAM001, IAM002 and IAM004 fired on real data with correct details.
   This proves they read the real API shapes; the thresholds themselves are covered by
-  fixtures.
+  fixtures. (Config validation now rejects 0; repeat it with 1 and a tiny rate.)
 - **Live verification with temporary organization changes** (authorized by the owner; state
   snapshotted before and compared identical after): SEC013 (installed `cschleiden.prtemplates`,
   reported with `vso.code_write`, uninstalled); AGT003 (agent 5.282.0 registered in a dedicated
@@ -369,6 +376,11 @@ File: `adoscope.config.psd1`, a PowerShell data file read with `Import-PowerShel
 - Unknown keys, check IDs and parameter names are errors: a typo must not silently
   fall back to defaults. Check-specific standards (production environment patterns,
   agent trust groups) are check `Parameters`, not top-level keys.
+- Parameter values are validated before any API call: the type follows the default
+  (whole number >= 1, number > 0, boolean, non-empty string, list of strings, table of
+  string lists), then the check's `Validate` checks meaning (AGT002 version format;
+  REL001 `runs` <= 50, `minimumRuns` <= `runs`, `maxFailureRate` < 1; AGT001 at least two
+  trust groups, no project in two). Errors name the parameter, the value and the rule.
 - Suppressions are valid through their `Expires` day. Each one is reported as `Active`,
   `Expired` (ignored; the finding is back) or `Unmatched` (nothing to suppress: fixed or
   wrong). These are configuration issues, shown in the report's `Suppressions` section,
@@ -379,8 +391,11 @@ File: `adoscope.config.psd1`, a PowerShell data file read with `Import-PowerShel
 
 - **Console**: grouped by severity, colored, coverage gaps, stale suppressions,
   summary with suppressed count. Suppressed findings are not listed.
-- **Json**: tool, version, timestamp, organization, collections, check statuses,
-  suppressions, findings (suppressed ones flagged).
+- **Json**: tool, `SchemaVersion`, version, timestamp, organization, `Scope`
+  (`CollectedAt`, `Mode` Live/Offline, analyzed `Projects`), collections, check statuses,
+  suppressions, findings (suppressed ones flagged). Console and HTML show the collection
+  date and mode too; an offline context older than 7 days prints a warning. A report from
+  old data must not read as a fresh audit.
 - **Sarif**: valid SARIF 2.1.0; one rule per check, one result per finding,
   `partialFingerprints` from Fingerprint, `logicalLocations` plus a synthetic
   `ado://{project}/{resourceType}/{id}` artifact URI (code scanning requires a location).
@@ -392,9 +407,13 @@ File: `adoscope.config.psd1`, a PowerShell data file read with `Import-PowerShel
   in any combination; `-PassThru` returns the report (adds `Rules`: effective
   metadata of enabled checks).
 - `-BaselinePath <previous JSON report>`: findings with a fingerprint already in it get
-  `InBaseline = $true`; the report gains `Baseline { New; Existing; Resolved }`, the
-  console marks known findings and counts new/resolved, SARIF sets `baselineState`
-  (`new`/`unchanged`). A baseline of another organization is rejected.
+  `InBaseline = $true`; the report gains `Baseline { New; Existing; Resolved; Unverified }`.
+  A baseline finding that is gone counts as **Resolved** only if the run could have seen
+  it: its check is `Evaluated` now, its project is in `Scope.Projects`, and the check's
+  effective parameters equal those in the baseline's `Rules`. Otherwise it is
+  **Unverified** (403, partial data, disabled check, narrower scope, changed threshold):
+  not proof of a fix. The console marks known findings and counts new/resolved/unverified,
+  SARIF sets `baselineState` (`new`/`unchanged`). A baseline of another organization is rejected.
 - `adoscope.ps1` (CI wrapper, the only place that calls `exit`): `-FailOn
   <Severity|None>` (default High). Exit 0 ok; 1 unsuppressed, **not-in-baseline** findings
   at or above FailOn; 2 incomplete coverage (Partial/NotEvaluated/Error) unless

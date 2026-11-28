@@ -12,7 +12,7 @@ function Show-AdoScopeConsoleReport {
     $colors = @{ Critical = 'Magenta'; High = 'Red'; Medium = 'Yellow'; Low = 'Cyan'; Info = 'Gray' }
     $active = @($Report.Findings | Where-Object { -not $_.Suppressed })
 
-    Write-Host "adoscope $($Report.Version) - organization '$($Report.Organization)' - $($Report.GeneratedAt)"
+    Write-Host "adoscope $($Report.Version) - organization '$($Report.Organization)' - data collected $($Report.Scope.CollectedAt) ($($Report.Scope.Mode)), $(@($Report.Scope.Projects).Count) project(s)"
     for ($i = $script:Severities.Count - 1; $i -ge 0; $i--) {
         $severity = $script:Severities[$i]
         $group = @($active | Where-Object Severity -eq $severity | Sort-Object CheckId, Project, Resource)
@@ -49,6 +49,6 @@ function Show-AdoScopeConsoleReport {
     $evaluated = @($Report.Checks | Where-Object Status -eq 'Evaluated').Count
     $enabled = @($Report.Checks | Where-Object Status -ne 'Disabled').Count
     Write-Host ''
-    $baseline = if ($Report.Baseline) { " | new: $($Report.Baseline.New), resolved since baseline: $($Report.Baseline.Resolved)" } else { '' }
+    $baseline = if ($Report.Baseline) { " | new: $($Report.Baseline.New), resolved since baseline: $($Report.Baseline.Resolved), gone but unverified: $($Report.Baseline.Unverified)" } else { '' }
     Write-Host "Summary - $($counts -join ', ') | suppressed: $suppressed$baseline | checks: $evaluated/$enabled fully evaluated"
 }

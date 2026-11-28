@@ -50,6 +50,7 @@ function Import-AdoScopeConfig {
     foreach ($id in $config.Parameters.Keys) {
         if ($config.Parameters[$id] -isnot [hashtable]) { throw "$where Checks.Parameters.$id must be a hashtable." }
         Assert-AdoScopeConfigKey -Table $config.Parameters[$id] -Allowed @($catalog[$id].Parameters.Keys) -Where "$where Checks.Parameters.$id"
+        Assert-AdoScopeParameterValue -Check $catalog[$id] -Override $config.Parameters[$id] -Where "$where Checks.Parameters.$id"
     }
     foreach ($id in $config.Severity.Keys) {
         if ($config.Severity[$id] -notin $script:Severities) { throw "$where has invalid severity '$($config.Severity[$id])' for $id." }
@@ -96,4 +97,39 @@ function Assert-AdoScopeConfigKey {
     if ($Table -isnot [hashtable]) { throw "$Where must be a hashtable." }
     $unknown = @($Table.Keys | Where-Object { $_ -notin $Allowed })
     if ($unknown) { throw "$Where has unknown key(s): $($unknown -join ', '). Allowed: $($Allowed -join ', ')." }
+}
+
+function Assert-AdoScopeParameterValue {
+    <#
+    .SYNOPSIS
+        Rejects override values that do not fit the check: the type follows the default
+        (integer, number, boolean, string, list of strings, table of string lists), numbers
+        must be positive, then the check's own Validate scriptblock checks meaning and coherence.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$Check,
+        [Parameter(Mandatory)][hashtable]$Override,
+        [Parameter(Mandatory)][string]$Where
+    )
+
+    $isText = { param($v) @($v | Where-Object { $_ -isnot [string] -or [string]::IsNullOrWhiteSpace($_) }).Count -eq 0 }
+    foreach ($name in $Override.Keys) {
+        $value = $Override[$name]
+        $default = $Check.Parameters[$name]
+        $expected = switch ($true) {
+            ($default -is [bool]) { if ($value -isnot [bool]) { '$true or $false' } }
+            ($default -is [int] -or $default -is [long]) { if (($value -isnot [int] -and $value -isnot [long]) -or $value -lt 1) { 'a whole number >= 1' } }
+            ($default -is [double]) { if (($value -isnot [int] -and $value -isnot [double]) -or $value -le 0) { 'a number > 0' } }
+            ($default -is [string]) { if ($value -isnot [string] -or -not $value.Trim()) { 'a non-empty string' } }
+            ($default -is [array]) { if (-not (& $isText $value)) { "a list of non-empty strings, e.g. @('a', 'b')" } }
+            ($default -is [hashtable]) { if ($value -isnot [hashtable] -or @($value.Values | Where-Object { -not (& $isText $_) })) { "a table of string lists, e.g. @{ name = @('a', 'b') }" } }
+        }
+        if ($expected) { throw "$Where.$name has invalid value '$(@($value) -join ', ')': expected $expected." }
+    }
+    if (-not $Check['Validate']) { return }
+    $effective = $Check.Parameters.Clone()
+    foreach ($name in $Override.Keys) { $effective[$name] = $Override[$name] }
+    $problems = @(& $Check.Validate $effective)
+    if ($problems) { throw "$Where is invalid: $($problems -join '; ')." }
 }

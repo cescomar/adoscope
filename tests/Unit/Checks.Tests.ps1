@@ -29,7 +29,6 @@ Describe 'Built-in checks' {
         @{ Id = 'PIP003'; Expected = @('web-classic') }
         @{ Id = 'PIP004'; Expected = @('web-release/Production') }               # Dev is not production; live has gates; unreadable definition skipped
         @{ Id = 'PIP005'; Expected = @('api-release/prod-eu') }                  # prod-us forbids self-approval
-        @{ Id = 'AGT001'; Expected = @() }                                      # no trust groups configured
         @{ Id = 'AGT002'; Expected = @('shared-linux/linux-01', 'shared-linux/linux-02') }   # v3 and v4 below 5.0.0; v5 ok; hosted and elastic skipped
         @{ Id = 'AGT003'; Expected = @('shared-linux/linux-02') }
         @{ Id = 'HYG001'; Expected = @('api-never-old', 'web-stale') }
@@ -80,6 +79,12 @@ Describe 'Built-in checks' {
         @{ Id = 'AGT003'; Resource = 'shared-linux/linux-02'; Detail = "Agent 'linux-02' in pool 'shared-linux' has been offline for 92 days; threshold 30." }
     ) {
         ($result.Findings | Where-Object { $_.CheckId -eq $Id -and $_.Resource -eq $Resource }).Detail | Should -Be $Detail
+    }
+
+    It 'AGT001 is NotEvaluated, not clean, when no trust groups are configured' {
+        $check = $result.Checks | Where-Object CheckId -eq 'AGT001'
+        $check.Status | Should -Be 'NotEvaluated'
+        $check.Message | Should -BeLike '*Checks.Parameters.AGT001.trustGroups*'
     }
 
     It 'AGT001 flags a self-hosted pool shared by different trust groups, never a hosted one' {

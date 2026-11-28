@@ -7,6 +7,12 @@
     Remediation = 'Open the recent failed runs, separate flaky tests and infrastructure errors from real defects, fix or quarantine the flaky parts, and track the failure rate until it is below the threshold.'
     # Canceled runs are ignored; partiallySucceeded counts as success. runs <= 50 (collector limit).
     Parameters  = @{ runs = 20; minimumRuns = 5; maxFailureRate = 0.3 }
+    Validate    = {
+        param($Parameters)
+        if ($Parameters.runs -gt 50) { 'runs must be at most 50 (runs collected per pipeline)' }
+        if ($Parameters.minimumRuns -gt $Parameters.runs) { "minimumRuns ($($Parameters.minimumRuns)) must not exceed runs ($($Parameters.runs))" }
+        if ($Parameters.maxFailureRate -ge 1) { 'maxFailureRate is a fraction below 1 (0.3 = 30%)' }
+    }
     Requires    = @('Builds')
     Test        = {
         param($Context, $Parameters)

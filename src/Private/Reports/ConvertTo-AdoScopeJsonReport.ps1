@@ -5,6 +5,6 @@ function ConvertTo-AdoScopeJsonReport {
         [Parameter(Mandatory)][pscustomobject]$Report
     )
 
-    $Report | Select-Object Tool, Version, Organization, GeneratedAt, Collections, Rules, Checks, Suppressions, Baseline, Findings |
+    $Report | Select-Object Tool, SchemaVersion, Version, Organization, GeneratedAt, Scope, Collections, Rules, Checks, Suppressions, Baseline, Findings |
         ConvertTo-Json -Depth 10
 }

@@ -6,6 +6,7 @@ function Import-AdoScopeContext {
     .DESCRIPTION
         Context shape (hashtables, so checks can probe optional keys under StrictMode):
           @{
+            SchemaVersion = 1                       # absent in contexts saved before 0.3.0 = 1
             Organization = 'org'
             CollectedAt  = '2026-01-01T00:00:00Z'
             Collections  = @{
@@ -26,6 +27,10 @@ function Import-AdoScopeContext {
     if ([string]::IsNullOrWhiteSpace($context['Organization'])) { throw "$where is missing 'Organization'." }
     if ($context['Collections'] -isnot [hashtable]) { throw "$where is missing 'Collections' object." }
     if ($null -eq ($context['CollectedAt'] -as [datetime])) { throw "$where is missing a valid 'CollectedAt' timestamp." }
+    $schema = if ($context.ContainsKey('SchemaVersion')) { $context.SchemaVersion -as [int] } else { 1 }
+    if ($schema -notin 1..$script:ContextSchemaVersion) {
+        throw "$where has SchemaVersion '$($context.SchemaVersion)'; this adoscope reads 1 to $($script:ContextSchemaVersion). Update adoscope or collect again."
+    }
 
     foreach ($name in @($context.Collections.Keys)) {
         $collection = $context.Collections[$name]

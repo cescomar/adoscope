@@ -8,6 +8,20 @@
     Remediation = 'Give each trust group its own agent pool (or use ephemeral agents, e.g. scale-set agents with "tear down after each use"), and remove the pool from the projects of the other groups in Project settings > Agent pools.'
     # Example: @{ production = @('payments', 'core'); sandbox = @('playground') }. Projects not listed are ignored.
     Parameters  = @{ trustGroups = @{} }
+    # Without trust groups the check cannot tell a risky pool from a fine one: NotEvaluated, not clean.
+    RequiredParameters = @('trustGroups')
+    Validate    = {
+        param($Parameters)
+        $groups = $Parameters.trustGroups
+        if ($groups.Count -eq 1) { 'trustGroups needs at least two groups to find a pool shared between them' }
+        $owner = @{}
+        foreach ($group in $groups.Keys) {
+            foreach ($project in @($groups[$group])) {
+                if ($owner.ContainsKey($project) -and $owner[$project] -ne $group) { "project '$project' is in trust groups '$($owner[$project])' and '$group'" }
+                $owner[$project] = $group
+            }
+        }
+    }
     Requires    = @('AgentQueues')
     Test        = {
         param($Context, $Parameters)

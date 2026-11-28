@@ -103,7 +103,7 @@ function Invoke-AdoScopeAudit {
     }
     $context = Get-AdoScopeAuditContext @contextParameters -Config $config -Check $checks
     $result = Invoke-AdoScopeCheck -Check $checks -Context $context -Parameters $config.Parameters
-    New-AdoScopeReport -Catalog $catalog -Check $checks -Config $config -Context $context -Result $result -BaselinePath $BaselinePath
+    New-AdoScopeReport -Catalog $catalog -Check $checks -Config $config -Context $context -Result $result -BaselinePath $BaselinePath -Mode $PSCmdlet.ParameterSetName
 }
 
 function Get-AdoScopeAuditContext {
@@ -142,19 +142,29 @@ function New-AdoScopeReport {
         [Parameter(Mandatory)][hashtable]$Config,
         [Parameter(Mandatory)][hashtable]$Context,
         [Parameter(Mandatory)][pscustomobject]$Result,
-        [string]$BaselinePath
+        [string]$BaselinePath,
+        [ValidateSet('Live', 'Offline')][string]$Mode = 'Live'
     )
 
     $disabled = @($Catalog | Where-Object { $_.Id -in $Config.Disabled } | ForEach-Object { [pscustomobject]@{ CheckId = $_.Id; Status = 'Disabled'; Message = 'Disabled in configuration.' } })
-    [pscustomobject]@{
-        PSTypeName   = 'AdoScope.Report'; Tool = 'adoscope'; Version = $MyInvocation.MyCommand.Module.Version.ToString()
+    $collectedAt = ([datetime]$Context.CollectedAt).ToUniversalTime()
+    # ponytail: fixed 7-day warning; make it a parameter if a CI gate needs a hard limit.
+    if ($Mode -eq 'Offline' -and ([datetime]::UtcNow - $collectedAt).TotalDays -gt 7) {
+        Write-Warning "Offline context collected $([int]([datetime]::UtcNow - $collectedAt).TotalDays) days ago ($($collectedAt.ToString('yyyy-MM-dd'))): the report describes the organization at that date, not today."
+    }
+    $report = [pscustomobject]@{
+        PSTypeName   = 'AdoScope.Report'; Tool = 'adoscope'; SchemaVersion = $script:ReportSchemaVersion; Version = $MyInvocation.MyCommand.Module.Version.ToString()
         Organization = $Context.Organization; GeneratedAt = [datetime]::UtcNow.ToString('o')
+        # Provenance: when the data was read, how, and which projects it covers.
+        Scope        = [pscustomobject]@{ CollectedAt = $collectedAt.ToString('o'); Mode = $Mode; Projects = @($Context.Collections['Projects']?['Items'] | ForEach-Object { [string]$_['name'] } | Sort-Object) }
         Collections  = @($Context.Collections.Keys | Sort-Object | ForEach-Object { $collection = $Context.Collections[$_]; [pscustomobject]@{ Name = $_; Status = $collection.Status; Count = @($collection.Items).Count; Error = $collection.Error } })
         Rules        = @($Check | ForEach-Object { New-AdoScopeReportRule -Check $_ -Override $Config.Parameters[$_.Id] })
         Checks       = @($Result.Checks) + $disabled; Findings = $Result.Findings
         Suppressions = @(Resolve-AdoScopeSuppression -Finding $Result.Findings -Suppression $Config.Suppressions)
-        Baseline     = if ($BaselinePath) { Resolve-AdoScopeBaseline -Finding @($Result.Findings) -Path $BaselinePath -Organization $Context.Organization } else { $null }
+        Baseline     = $null
     }
+    if ($BaselinePath) { $report.Baseline = Resolve-AdoScopeBaseline -Report $report -Path $BaselinePath }
+    $report
 }
 
 function New-AdoScopeReportRule {

@@ -42,7 +42,7 @@ function Get-AdoScopeContext {
         [ValidateRange(1, 16)][int]$ThrottleLimit = 1
     )
 
-    $context = @{ Organization = $Organization; CollectedAt = [datetime]::UtcNow; Collections = @{} }
+    $context = @{ SchemaVersion = $script:ContextSchemaVersion; Organization = $Organization; CollectedAt = [datetime]::UtcNow; Collections = @{} }
     # Auth failures surface here and are terminating: nothing else would work.
     $projects = @(Get-AdoProject -Organization $Organization -Auth $Auth)
     if ($Project) {

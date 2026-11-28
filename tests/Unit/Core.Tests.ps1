@@ -135,4 +135,14 @@ Describe 'Import-AdoScopeContext' {
             { Import-AdoScopeContext -Path $path } | Should -Throw '*valid Status*'
         }
     }
+
+    It 'rejects a context saved by a newer adoscope (unknown SchemaVersion)' {
+        $path = Join-Path $TestDrive 'future.json'
+        '{ "SchemaVersion": 99, "Organization": "o", "CollectedAt": "2026-01-01T00:00:00Z", "Collections": {} }' | Set-Content $path
+        InModuleScope adoscope -Parameters @{ P = $path } {
+            param($P)
+            $path = $P
+            { Import-AdoScopeContext -Path $path } | Should -Throw "*SchemaVersion '99'*"
+        }
+    }
 }

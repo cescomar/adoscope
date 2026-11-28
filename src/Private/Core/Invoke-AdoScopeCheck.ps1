@@ -7,7 +7,8 @@ function Invoke-AdoScopeCheck {
         Check status:
           Evaluated    - all required collections Ok.
           Partial      - ran, but at least one required collection is Partial.
-          NotEvaluated - a required collection is missing, Failed or Forbidden.
+          NotEvaluated - a required collection is missing, Failed or Forbidden, or a parameter
+                         listed in RequiredParameters is empty (the check could find nothing).
                          Never reported as "clean": zero findings would be a lie.
           Error        - the check threw or emitted something that is not a finding.
     #>
@@ -24,15 +25,14 @@ function Invoke-AdoScopeCheck {
     $findings = [System.Collections.Generic.List[object]]::new()
 
     foreach ($c in $Check) {
-        $state = Get-AdoScopeCheckReadiness -Check $c -Context $Context
-        if ($state.Status -eq 'NotEvaluated') {
-            $statuses.Add([pscustomobject]@{ CheckId = $c.Id; Status = $state.Status; Message = $state.Message })
-            continue
-        }
-
         $effective = $c.Parameters.Clone()
         if ($Parameters[$c.Id] -is [hashtable]) {
             foreach ($key in $Parameters[$c.Id].Keys) { $effective[$key] = $Parameters[$c.Id][$key] }
+        }
+        $state = Get-AdoScopeCheckReadiness -Check $c -Context $Context -Parameters $effective
+        if ($state.Status -eq 'NotEvaluated') {
+            $statuses.Add([pscustomobject]@{ CheckId = $c.Id; Status = $state.Status; Message = $state.Message })
+            continue
         }
 
         try {
@@ -57,9 +57,18 @@ function Get-AdoScopeCheckReadiness {
     [OutputType([pscustomobject])]
     param(
         [Parameter(Mandatory)][hashtable]$Check,
-        [Parameter(Mandatory)][hashtable]$Context
+        [Parameter(Mandatory)][hashtable]$Context,
+        [hashtable]$Parameters = @{}
     )
 
+    $unconfigured = @(foreach ($name in @($Check['RequiredParameters'] | Where-Object { $_ })) {
+            $value = $Parameters[$name]
+            $empty = if ($value -is [System.Collections.IDictionary]) { $value.Count -eq 0 } else { -not @($value | Where-Object { $_ }).Count }
+            if ($empty) { $name }
+        })
+    if ($unconfigured) {
+        return [pscustomobject]@{ Status = 'NotEvaluated'; Message = "Not configured: set Checks.Parameters.$($Check.Id).$($unconfigured -join ', ') in the config, or disable $($Check.Id)." }
+    }
     $unavailable = @()
     $partial = @()
     foreach ($name in $Check.Requires) {

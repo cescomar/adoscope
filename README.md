@@ -86,12 +86,15 @@ coverage gap instead of a silent pass.
 |---|---|
 | 0 | No unsuppressed finding at or above `-FailOn` (default `High`), full coverage |
 | 1 | Findings at or above `-FailOn` |
-| 2 | Some checks could not be evaluated (use `-AllowIncompleteCoverage` to accept) |
+| 2 | Some checks could not be evaluated: data unreadable, or a check not configured such as AGT001 without `trustGroups` (configure or disable it, or use `-AllowIncompleteCoverage`) |
 | 3 | The audit failed (authentication, configuration, network) |
 
 **Adopting the gate on an organization with existing findings.** Save today's report
 once and use it as a baseline: the build fails only on findings that are *new*, while
-the report shows how many known ones were resolved.
+the report shows how many known ones were resolved. A finding counts as resolved only
+when the run could have seen it (check fully evaluated, project in scope, same
+parameters); one that vanished because of a 403 or a changed threshold is reported as
+*unverified*, never as fixed.
 
 ```powershell
 ./adoscope.ps1 -Organization fabrikam -JsonPath ./baseline.json -FailOn None   # once
@@ -157,7 +160,9 @@ Optional `adoscope.config.psd1` (PowerShell data file: comments allowed, never e
 }
 ```
 
-Typos (unknown keys, checks or parameters) are errors. Expired suppressions stop
+Typos (unknown keys, checks or parameters) and invalid values (negative days, a project
+in two trust groups, a version that is not a version) are errors, raised before any API
+call. Expired suppressions stop
 applying and are reported; suppressions that no longer match anything are reported
 too, so exceptions do not pile up.
 

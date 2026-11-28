@@ -54,6 +54,9 @@ function Assert-AdoScopeCheck {
     if ($Check.ContainsKey('Parameters') -and $Check.Parameters -isnot [hashtable]) {
         throw "$where has 'Parameters' that is not a hashtable."
     }
+    $unknownRequired = @($Check['RequiredParameters'] | Where-Object { $_ -isnot [string] -or -not ($Check['Parameters'] -is [hashtable] -and $Check.Parameters.ContainsKey($_)) })
+    if ($unknownRequired) { throw "$where lists RequiredParameters '$($unknownRequired -join ', ')' that are not in 'Parameters'." }
+    if ($Check.ContainsKey('Validate') -and $Check.Validate -isnot [scriptblock]) { throw "$where has 'Validate' that is not a scriptblock." }
     # OWASP Top 10 CI/CD Security Risks ids only (https://owasp.org/www-project-top-10-ci-cd-security-risks/).
     $badStandard = @($Check['Standards'] | Where-Object { $_ -isnot [string] -or $_ -cnotmatch '^CICD-SEC-(10|[1-9])$' })
     if ($badStandard) { throw "$where has invalid Standards '$($badStandard -join ', ')' (expected CICD-SEC-1 .. CICD-SEC-10)." }
