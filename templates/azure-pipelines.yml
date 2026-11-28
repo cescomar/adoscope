@@ -1,0 +1,73 @@
+# adoscope: weekly audit of an Azure DevOps organization.
+#
+# Copy this file into a PRIVATE repository together with adoscope.config.psd1, then create
+# a pipeline from it. Reports contain organization data: keep the repository and the
+# pipeline artifacts private.
+#
+# Identity (recommended, no stored secret): an Azure Resource Manager service connection
+# that uses workload identity federation. Add its service principal to the Azure DevOps
+# organization (Organization settings > Users) with read access to what you audit; for
+# full coverage make it a member of Project Collection Administrators or grant equivalent
+# read permissions. Missing permissions show up as coverage gaps, never as a clean result.
+#
+# Baseline: run once with failOn = None, download report.json from the artifact, commit it
+# as adoscope.baseline.json next to this file. From then on only NEW findings fail the run.
+
+trigger: none
+pr: none
+
+schedules:
+  - cron: '0 6 * * 1'        # Mondays 06:00 UTC
+    displayName: Weekly audit
+    branches:
+      include: [main]
+    always: true
+
+parameters:
+  - name: failOn
+    displayName: Fail on unsuppressed new findings at or above
+    type: string
+    default: High
+    values: [Critical, High, Medium, Low, Info, None]
+
+variables:
+  serviceConnection: adoscope-reader        # name of the workload identity federation connection
+  organization: fabrikam                    # your organization (or set Organization in the config)
+  adoscopeVersion: v0.2.0                   # pinned release tag of adoscope
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+
+  - script: git clone --quiet --depth 1 --branch $(adoscopeVersion) https://github.com/cescomar/adoscope.git $(Agent.TempDirectory)/adoscope
+    displayName: Get adoscope $(adoscopeVersion)
+
+  - task: AzureCLI@2
+    displayName: Audit $(organization)
+    inputs:
+      azureSubscription: $(serviceConnection)
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        $out = '$(Build.ArtifactStagingDirectory)'
+        $arguments = @{
+            Organization = '$(organization)'
+            FailOn       = '${{ parameters.failOn }}'
+            JsonPath     = "$out/report.json"
+            SarifPath    = "$out/report.sarif"
+            HtmlPath     = "$out/report.html"
+        }
+        if (Test-Path adoscope.config.psd1) { $arguments.ConfigPath = 'adoscope.config.psd1' }
+        if (Test-Path adoscope.baseline.json) { $arguments.BaselinePath = 'adoscope.baseline.json' }
+        # Exit codes: 0 ok, 1 findings at or above FailOn, 2 incomplete coverage, 3 audit error.
+        & '$(Agent.TempDirectory)/adoscope/adoscope.ps1' @arguments
+        exit $LASTEXITCODE
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish reports
+    condition: always()
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)
+      artifact: adoscope-report

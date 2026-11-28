@@ -46,6 +46,31 @@ Describe 'Get-AdoBuildDefinition' {
     }
 }
 
+Describe 'Get-AdoReleaseDefinition' {
+    It 'keeps stage approvals without variable values, and isolates an unreadable definition' {
+        # Synthetic credential-shaped value (legacy PAT format), not a real token.
+        $script:fakePat = 'rstu2345' * 6 + 'rstu'
+        Mock Invoke-AdoScopeListRequest -ModuleName adoscope { @{ id = 1; name = 'ok' }; @{ id = 2; name = 'denied' } }
+        Mock Invoke-AdoScopeRequest -ModuleName adoscope {
+            if ($Uri.AbsolutePath -like '*/definitions/2') { throw [System.Net.Http.HttpRequestException]::new('HTTP 403', $null, [System.Net.HttpStatusCode]::Forbidden) }
+            [pscustomobject]@{ Content = @{
+                    variables    = @{ DeployToken = @{ value = $script:fakePat } }
+                    environments = @(@{ id = 7; name = 'Prod'; variables = @{ Region = @{ value = 'eu-west' } }
+                            preDeployApprovals = @{ approvals = @(@{ isAutomated = $false; approver = @{ uniqueName = 'someone@contoso.example' } })
+                                approvalOptions = @{ releaseCreatorCanBeApprover = $true } }
+                            preDeploymentGates = @{ gates = @() } })
+                } }
+        }
+        $items = InModuleScope adoscope { @(Get-AdoReleaseDefinition -Organization 'o' -Auth ([pscustomobject]@{}) -Project @{ id = 'p'; name = 'web' }) }
+        ($items | ConvertTo-Json -Depth 20) | Should -Not -Match "$script:fakePat|eu-west|someone@"
+        $ok = $items | Where-Object name -eq 'ok'
+        $ok.variables.DeployToken._valueLooksLikeCredential | Should -BeTrue
+        $ok.environments[0].approvals[0].isAutomated | Should -BeFalse
+        $ok.environments[0].releaseCreatorCanBeApprover | Should -BeTrue
+        ($items | Where-Object name -eq 'denied')._error | Should -Match "release definition of 'denied': HTTP 403"
+    }
+}
+
 Describe 'Get-AdoScopeContext organization-wide collections' {
     It 'marks an organization collection Forbidden when the call is denied, without failing the run' {
         Mock Get-AdoProject -ModuleName adoscope { @(@{ id = 'p1'; name = 'alpha' }) }

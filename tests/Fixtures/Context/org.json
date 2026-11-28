@@ -186,6 +186,26 @@
           "_project": { "id": "00000000-0000-0000-0000-0000000000a2", "name": "api" } }
       ]
     },
+    "ReleaseDefinitions": {
+      "Status": "Ok",
+      "Items": [
+        { "id": 51, "name": "web-release", "project": { "name": "web" },
+          "variables": { "DeployPassword": { "isSecret": false, "_valueLooksLikeCredential": false }, "TokenUrl": { "isSecret": false, "_valueLooksLikeCredential": false } },
+          "environments": [
+            { "id": 1, "name": "Dev", "approvals": [ { "isAutomated": true } ], "gates": 0,
+              "variables": { "SqlConnectionString": { "isSecret": true, "_valueLooksLikeCredential": false } } },
+            { "id": 2, "name": "Production", "approvals": [ { "isAutomated": true } ], "gates": 0,
+              "variables": { "Endpoint": { "isSecret": false, "_valueLooksLikeCredential": true } } } ] },
+        { "id": 52, "name": "api-release", "project": { "name": "api" }, "variables": {},
+          "environments": [
+            { "id": 1, "name": "prod-eu", "approvals": [ { "isAutomated": false } ], "releaseCreatorCanBeApprover": true, "gates": 0 },
+            { "id": 2, "name": "prod-us", "approvals": [ { "isAutomated": false } ], "releaseCreatorCanBeApprover": false, "gates": 0 },
+            { "id": 3, "name": "live", "approvals": [ { "isAutomated": true } ], "gates": 2 } ] },
+        { "id": 53, "name": "data-release", "project": { "name": "data" },
+          "_error": "release definition of 'data-release': HTTP 403" },
+        { "id": 54 }
+      ]
+    },
     "AgentQueues": {
       "Status": "Ok",
       "Items": [
@@ -207,7 +227,7 @@
           "_agents": [
             { "id": 1, "name": "linux-01", "version": "3.238.0", "status": "online", "statusChangedOn": "2026-05-31T00:00:00Z" },
             { "id": 2, "name": "linux-02", "version": "4.250.0", "status": "offline", "statusChangedOn": "2026-03-01T00:00:00Z" },
-            { "id": 3, "name": "linux-03", "version": "4.250.0", "status": "offline", "statusChangedOn": "2026-05-25T00:00:00Z" },
+            { "id": 3, "name": "linux-03", "version": "5.3.0", "status": "offline", "statusChangedOn": "2026-05-25T00:00:00Z" },
             { "id": 4, "name": "linux-04" }
           ] },
         { "id": 22, "name": "vmss", "isHosted": false, "options": "elasticPool, singleUseAgents",

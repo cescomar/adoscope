@@ -21,4 +21,15 @@ $config = New-PesterConfiguration
 $config.Run.Path = Join-Path $PSScriptRoot 'tests'
 $config.Run.Throw = $true
 $config.Output.Verbosity = 'Detailed'
-Invoke-Pester -Configuration $config
+$config.Run.PassThru = $true
+$config.CodeCoverage.Enabled = $true
+$config.CodeCoverage.Path = @((Join-Path $PSScriptRoot 'src'), (Join-Path $PSScriptRoot 'adoscope.psm1'))
+$config.CodeCoverage.OutputPath = Join-Path ([IO.Path]::GetTempPath()) 'adoscope-coverage.xml'
+$result = Invoke-Pester -Configuration $config
+
+# Pester only reports coverage; this makes a drop below the floor fail the build.
+# Measured 89.7% at v0.2.0; uncovered lines are mostly collectors, which the live lab exercises.
+$minimumCoverage = 85
+$coverage = [math]::Round($result.CodeCoverage.CoveragePercent, 1)
+if ($coverage -lt $minimumCoverage) { throw "Code coverage $coverage% is below the $minimumCoverage% floor." }
+Write-Output "Code coverage: $coverage% (floor $minimumCoverage%)"

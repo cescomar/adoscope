@@ -11,6 +11,7 @@ $script:ProjectCollectors = [ordered]@{
     RepositoryActivity   = 'Get-AdoRepositoryActivity'
     Policies             = 'Get-AdoPolicy'
     AgentQueues          = 'Get-AdoAgentQueue'
+    ReleaseDefinitions   = 'Get-AdoReleaseDefinition'
 }
 # Organization-wide; not affected by -Project.
 $script:OrganizationCollectors = [ordered]@{

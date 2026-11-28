@@ -10,14 +10,8 @@
     Requires    = @('AdminGroups')
     Test        = {
         param($Context, $Parameters)
-        foreach ($group in $Context.Collections.AdminGroups.Items | Where-Object { $_['scope'] -eq 'organization' }) {
-            $members = @($group['members'] | Where-Object { $_ -is [hashtable] })
-            if ($members.Count -le $Parameters.maxMembers) { continue }
-            $names = @($members | ForEach-Object { if ($_['principalName']) { $_.principalName } else { $_.descriptor } } | Sort-Object)
-            $shown = ($names | Select-Object -First 10) -join ', '
-            $more = if ($names.Count -gt 10) { " (+$($names.Count - 10) more)" } else { '' }
-            New-AdoScopeFinding -Resource $group.principalName -ResourceId $group.descriptor `
-                -Detail "$($members.Count) members, maximum $($Parameters.maxMembers): $shown$more."
+        foreach ($oversized in Get-AdoScopeOversizedAdminGroup -Group @($Context.Collections.AdminGroups.Items) -Scope organization -MaxMembers $Parameters.maxMembers) {
+            New-AdoScopeFinding -Resource $oversized.Group.principalName -ResourceId $oversized.Group.descriptor -Detail $oversized.Detail
         }
     }
 }

@@ -293,9 +293,18 @@ Entitlement `user.descriptor` equals the Graph descriptor (verified), which join
 administrator" with "last access" for IAM002. IAM005 relies on `origin = msa` (personal
 Microsoft account), which only exists in organizations not backed by Entra ID.
 
-Not implemented: classic release pipelines (vsrm), variable groups not linked to
-Key Vault, PAT inventory (no admin API for other users' PATs), fine-grained permissions
-such as who can edit pipelines (security namespace ACL bits; high risk of wrong results).
+Classic release checks (PIP004, PIP005, SEC012) read `ReleaseDefinitions` from
+`vsrm.dev.azure.com`: the list endpoint, then one GET per definition (the list omits stage
+approvals and variables). Kept per stage: approvals (`isAutomated` only, no approver
+identities), `releaseCreatorCanBeApprover`, gate count, variables without values.
+**Not verified live:** the test organization has no classic releases and enforces
+`disableClassicReleasePipelineCreation`; the endpoints answer 200 with an empty list, and the
+item shape follows the official schema (Definitions - Get, 7.1). PIP004/PIP005 skip
+definitions that could not be read (unknown, not unprotected).
+
+Not implemented: variable groups not linked to Key Vault, PAT inventory (no admin API for
+other users' PATs), marketplace extensions (needs host `extmgmt.dev.azure.com`), fine-grained
+permissions such as who can edit pipelines (security namespace ACL bits; high risk of wrong results).
 
 ## 7. Configuration
 
@@ -363,7 +372,9 @@ File: `adoscope.config.psd1`, a PowerShell data file read with `Import-PowerShel
 - Errors: throw terminating errors for auth/config/catalog problems; for a single
   failed collector or check, write a warning, continue, and report it in the output.
 - Pass `PSScriptAnalyzer` with default rules, no suppressions without a justification.
-- Keep functions small; no function longer than ~60 lines.
+- Keep functions small: no more than ~60 lines of code, not counting comment-based help
+  and attributes (the help of public functions is required and may be long).
+- `./build.ps1` fails below 85% code coverage (Pester, `src` and `adoscope.psm1`).
 
 ## 10. Testing
 

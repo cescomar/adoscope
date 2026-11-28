@@ -159,7 +159,7 @@ function Get-AdoScopeApiUri {
         [Parameter(Mandatory)][string]$Organization,
         [Parameter(Mandatory)][string]$Path,
         [hashtable]$Query = @{},
-        [ValidateSet('dev', 'vsaex', 'vssps')][string]$Service = 'dev',
+        [ValidateSet('dev', 'vsaex', 'vssps', 'vsrm')][string]$Service = 'dev',
         [string]$ApiVersion = $script:ApiVersion
     )
 

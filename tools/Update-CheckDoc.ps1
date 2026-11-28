@@ -34,6 +34,7 @@ $endpoints = [ordered]@{
     AgentPools           = '`_apis/distributedtask/pools` + agents of self-hosted pools'
     UserEntitlements     = '`vsaex: _apis/userentitlements`'
     AdminGroups          = '`vssps: _apis/graph/groups`, `graph/users`, `graph/Memberships` (admin groups, nested groups expanded)'
+    ReleaseDefinitions   = '`vsrm: {project}/_apis/release/definitions` + each definition (variable values discarded)'
 }
 $unmapped = @($checks.Requires | Sort-Object -Unique | Where-Object { -not $endpoints.Contains($_) })
 if ($unmapped) { throw "Add the endpoint of collection(s) $($unmapped -join ', ') to tools/Update-CheckDoc.ps1." }

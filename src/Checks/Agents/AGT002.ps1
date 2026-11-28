@@ -3,9 +3,9 @@
     Title       = 'Self-hosted agent below minimum version'
     Category    = 'Agents'
     Severity    = 'Medium'
-    Rationale   = 'Old agent versions run on unsupported runtimes, miss security fixes and are refused by newer tasks. Agent v2 and v3 are out of support.'
-    Remediation = 'Update the agent from the pool page (Agent pools > the pool > Update all agents) or reinstall it with the current release; check that the host OS is supported by the new version.'
-    Parameters  = @{ minimumVersion = '4.0.0' }
+    Rationale   = 'Only the current major version of the agent receives security patches: Microsoft states that only 5.x agents get patches and that no new 4.x versions are published (Microsoft Learn, "Agent software version 5", 2026). Older agents also run on runtimes that no longer get fixes and can be refused by newer tasks.'
+    Remediation = 'Check that the host operating system is supported by .NET 10 (required by agent 5.x), upgrade the OS if needed, then update the agent from the pool page (Agent pools > the pool > Update all agents). Lower minimumVersion in the config only for hosts that cannot be upgraded yet.'
+    Parameters  = @{ minimumVersion = '5.0.0' }
     Requires    = @('AgentPools')
     Test        = {
         param($Context, $Parameters)

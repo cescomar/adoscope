@@ -35,13 +35,13 @@ Summary - Critical: 1, High: 2, Medium: 0, Low: 0, Info: 0 | suppressed: 0 | che
 
 ## What it checks
 
-25 checks across security, identity, pipelines, agents, hygiene, cost and reliability. Full
+29 checks across security, identity, pipelines, agents, hygiene, cost and reliability. Full
 list with rationale, remediation and parameters: **[docs/checks.md](docs/checks.md)**.
 
 | Area | Examples |
 |---|---|
-| Credentials | plain-text secrets in variable groups; service connections, secret variable groups and secure files open to every pipeline; client secrets instead of workload identity federation |
-| Pipelines | production environments without approvals or required template; fork PR builds with secrets; weakened pipeline security settings; classic pipelines |
+| Credentials | plain-text secrets in variable groups, pipeline and classic release variables; service connections, secret variable groups and secure files open to every pipeline; client secrets instead of workload identity federation |
+| Pipelines | production environments and classic release stages without approvals; release creators approving their own deployments; required template missing; fork PR builds with secrets; weakened pipeline security settings; classic pipelines |
 | Code | default branches without required reviewers; public projects |
 | Agents | self-hosted pools shared across trust groups; outdated or long-offline agents |
 | Hygiene and cost | pipelines and repositories unused for months; paid licenses of inactive users; pipelines that fail too often |
@@ -95,6 +95,11 @@ the report shows how many known ones were resolved.
 ./adoscope.ps1 -Organization fabrikam -JsonPath ./baseline.json -FailOn None   # once
 ./adoscope.ps1 -Organization fabrikam -BaselinePath ./baseline.json            # every run
 ```
+
+**Ready-made weekly audit:** [templates/azure-pipelines.yml](templates/azure-pipelines.yml)
+runs every Monday with a workload identity federation connection, applies your config and
+baseline, and publishes JSON, SARIF and HTML reports as a pipeline artifact. Copy it into a
+private repository next to `adoscope.config.psd1`.
 
 Azure Pipelines, with a workload identity federation service connection whose service
 principal is a user of the organization:
@@ -178,7 +183,8 @@ Install-Module PSScriptAnalyzer -Scope CurrentUser
 - Azure DevOps Services only (not Azure DevOps Server).
 - Configuration audit, not a penetration test; it does not scan repository content
   for secrets.
-- Not covered yet: classic release pipelines, PAT inventory.
+- Not covered yet: PAT inventory, marketplace extensions. Classic release checks follow
+  the official API schema; they have not been exercised on a live classic release yet.
 
 ## License
 

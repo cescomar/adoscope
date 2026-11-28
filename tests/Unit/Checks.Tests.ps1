@@ -22,11 +22,14 @@ Describe 'Built-in checks' {
         @{ Id = 'SEC009'; Expected = @('api-config') }
         @{ Id = 'SEC010'; Expected = @('signing.pfx') }
         @{ Id = 'SEC011'; Expected = @('api-never-new', 'web-ci') }              # secret NugetKey and plain BuildConfig not flagged
+        @{ Id = 'SEC012'; Expected = @('web-release') }                          # definition and stage variables; secret and TokenUrl skipped
         @{ Id = 'PIP001'; Expected = @('live', 'production') }                  # disabled check does not count; unreadable checks (prod-unreadable) are not "missing"
         @{ Id = 'PIP002'; Expected = @('live', 'prod-eu', 'production') }
         @{ Id = 'PIP003'; Expected = @('web-classic') }
+        @{ Id = 'PIP004'; Expected = @('web-release/Production') }               # Dev is not production; live has gates; unreadable definition skipped
+        @{ Id = 'PIP005'; Expected = @('api-release/prod-eu') }                  # prod-us forbids self-approval
         @{ Id = 'AGT001'; Expected = @() }                                      # no trust groups configured
-        @{ Id = 'AGT002'; Expected = @('shared-linux/linux-01') }               # hosted and elastic pools skipped
+        @{ Id = 'AGT002'; Expected = @('shared-linux/linux-01', 'shared-linux/linux-02') }   # v3 and v4 below 5.0.0; v5 ok; hosted and elastic skipped
         @{ Id = 'AGT003'; Expected = @('shared-linux/linux-02') }
         @{ Id = 'HYG001'; Expected = @('api-never-old', 'web-stale') }
         @{ Id = 'HYG002'; Expected = @('web-lib') }
@@ -64,6 +67,7 @@ Describe 'Built-in checks' {
 
     It 'details explain the decision: <Id>' -ForEach @(
         @{ Id = 'SEC006'; Resource = 'api-never-old'; Detail = 'Fork pull request builds receive: full-access token.' }   # secrets enforced off at project level
+        @{ Id = 'SEC012'; Resource = 'web-release'; Detail = "Not marked secret: DeployPassword (name suggests a credential); Endpoint (value matches a credential format) in stage 'Production'." }
         @{ Id = 'SEC009'; Resource = 'api-config'; Detail = 'Not marked secret: ApiToken (name suggests a credential); Endpoint (value matches a credential format).' }
         @{ Id = 'REL001'; Resource = 'web-ci'; Detail = '3 of the last 5 runs failed (60%); threshold 30%.' }                 # canceled ignored
         @{ Id = 'CST001'; Resource = 'carol@contoso.example'; Detail = 'Never signed in; license assigned 137 days ago. License: Basic + Test Plans; threshold 90 days.' }
@@ -92,5 +96,25 @@ Describe 'Built-in checks' {
                 $check.Remediation.Length | Should -BeGreaterThan 40 -Because "$($check.Id) needs actionable remediation"
             }
         }
+    }
+}
+
+Describe 'Credential detection in variables (SEC009, SEC011)' {
+    It '<Name> -> <Expected>' -ForEach @(
+        @{ Name = 'ApiToken'; Looks = $false; Expected = 'ApiToken (name suggests a credential)' }
+        @{ Name = 'DbPassword'; Looks = $false; Expected = 'DbPassword (name suggests a credential)' }
+        @{ Name = 'TokenEndpoint'; Looks = $false; Expected = $null }          # points to a credential, does not hold it
+        @{ Name = 'PasswordPolicyUrl'; Looks = $false; Expected = $null }
+        @{ Name = 'ClientSecretId'; Looks = $false; Expected = $null }
+        @{ Name = 'TokenUrl'; Looks = $true; Expected = 'TokenUrl (value matches a credential format)' }   # the value always wins
+    ) {
+        $check = InModuleScope adoscope -Parameters @{ Root = (Join-Path $PSScriptRoot '../..') } {
+            param($Root) Import-AdoScopeCheck -Path (Join-Path $Root 'src/Checks') | Where-Object Id -eq 'SEC009'
+        }
+        $variables = @{ $Name = @{ isSecret = $false; _valueLooksLikeCredential = $Looks } }
+        $found = InModuleScope adoscope -Parameters @{ V = $variables; P = $check.Parameters } {
+            param($V, $P) Get-AdoScopeExposedVariable -Variable $V -NamePattern $P.namePatterns -NameExclusion $P.nameExclusions
+        }
+        $found | Should -Be $Expected
     }
 }

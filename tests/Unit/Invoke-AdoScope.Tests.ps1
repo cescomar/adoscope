@@ -29,3 +29,15 @@ Describe 'Invoke-AdoScope' {
         $text | Should -Match 'checks: 1/2 fully evaluated'
     }
 }
+
+Describe 'adoscope.ps1 (CI wrapper)' {
+    It 'accepts every Invoke-AdoScope parameter, with the same parameter sets' {
+        $common = [System.Management.Automation.PSCmdlet]::CommonParameters + [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
+        $cmdlet = (Get-Command Invoke-AdoScope).Parameters
+        $wrapper = (Get-Command (Join-Path $PSScriptRoot '../../adoscope.ps1')).Parameters
+        foreach ($name in $cmdlet.Keys | Where-Object { $_ -notin $common }) {
+            $wrapper.Keys | Should -Contain $name -Because "a parameter added to Invoke-AdoScope must also be forwarded by adoscope.ps1"
+            @($wrapper[$name].ParameterSets.Keys | Sort-Object) | Should -Be @($cmdlet[$name].ParameterSets.Keys | Sort-Object) -Because "parameter set of $name"
+        }
+    }
+}
